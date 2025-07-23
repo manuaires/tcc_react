@@ -27,7 +27,7 @@ export default function SidebarCart({ isOpen, onClose, cartItems, removeFromCart
         <div className="flex justify-between mb-4">
           <h1><b>Seu carrinho</b></h1>
           <button
-            className="bg-gray-900 text-white w-7 h-7 rounded-full flex items-center justify-center"
+            className="bg-gray-800 hover:bg-red-700 text-white w-7 h-7 rounded-full flex items-center justify-center"
             onClick={onClose}
           >
             <FaXmark />
@@ -48,7 +48,7 @@ export default function SidebarCart({ isOpen, onClose, cartItems, removeFromCart
           <b>Total:</b>  R$ {total.toFixed(2)}
         </div>
 
-        <button className="bg-green-700 text-white py-2 px-4 rounded w-full flex items-center justify-center gap-2">
+        <button className="bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded w-full flex items-center justify-center gap-2">
             Enviar Pedido <IoSend />
         </button>
 

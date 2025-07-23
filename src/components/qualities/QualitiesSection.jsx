@@ -6,7 +6,7 @@ import { RiVerifiedBadgeFill } from "react-icons/ri";
 
 export default function QualitiesSection() {
   return (
-    <section className="w-full py-12">
+    <section className="w-full py-16">
       <h2 className="text-center text-3xl mt-8 mb-8 font-bold text-gray-800">
         Porquê nos escolher?
       </h2>

@@ -107,21 +107,21 @@ export default function PreviewSection() {
   );
 
   return (
-    <section className="w-full bg-gray-100 py-12">
+    <section className="w-full bg-gray-100 py-16 px-4">
       <div className="container mx-auto px-2 sm:px-4">
-        <h3 className="text-center text-3xl mt-8 mb-8 font-bold text-gray-800">
+        <h3 className="text-center text-3xl mb-6 font-bold text-gray-700">
           Nossos Produtos
         </h3>
-        <div className="flex justify-center gap-4 mb-6">
+        <div className="flex justify-center gap-4 mb-4 text-green-800">
           {categorias.map((cat) => (
             <button
               key={cat}
-              className={`px-4 py-2 rounded-full font-semibold ${
-                categoriaSelecionada === cat
-                  ? "bg-green-700 text-white"
-                  : "bg-white hover:bg-green-700 hover:text-white text-gray-800 border"
-              }`}
               onClick={() => setCategoriaSelecionada(cat)}
+              className={`pb-1 border-b-2 ${
+                categoriaSelecionada === cat
+                  ? "border-green-600"
+                  : "border-transparent"
+              } hover:border-green-700 transition`} 
             >
               {cat}
             </button>

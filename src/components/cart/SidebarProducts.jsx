@@ -16,7 +16,7 @@ export default function SidebarProducts({ item, onRemove,  onUpdateQty }) {
       <div className="flex gap-2 columns-1 text-sm">
         <button
           onClick={() => onRemove?.(item?.id)}
-          className="bg-gray-900 text-white w-4 h-4 rounded-full flex items-center justify-center"
+          className="bg-gray-800 hover:bg-red-700 text-white w-4 h-4 rounded-full flex items-center justify-center"
         >
           <FaXmark />
         </button>
