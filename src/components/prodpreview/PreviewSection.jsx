@@ -7,9 +7,9 @@ const produtos = [
   {
     id: 1,
     nomeprod: "Milho",
-    preço: "10-20",
+    preço: "50",
     categoria: "Cereais",
-    imagem: Cereaisimg,
+    imagem: "src/assets/produtos/image.png",
   },
   {
     id: 2,
@@ -88,6 +88,13 @@ const produtos = [
     categoria: "Variedades",
     imagem: Cereaisimg,
   },
+  {
+    id: 13,
+    nomeprod: "gatão",
+    preço: "5-10",
+    categoria: "Rações",
+    imagem: Cereaisimg,
+  },
 ];
 
 export default function PreviewSection() {
@@ -124,6 +131,7 @@ export default function PreviewSection() {
           {produtosFiltrados.slice(0, 4).map((prod) => (
             <CardPrev
               key={prod.id}
+              id={prod.id}
               nomeprod={prod.nomeprod}
               preço={prod.preço}
               imagem={prod.imagem}

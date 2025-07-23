@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-export default function Button({ link, text }) {
+export default function Button({ link, text, children }) {
   const linkClass =
     "group flex items-center font-semibold justify-center py-1 px-3 text-md font-light text-[#fdf6ed] relative";
 
@@ -10,7 +10,7 @@ export default function Button({ link, text }) {
   return (
     <li>
       <Link to={link} className={linkClass}>
-        {text}
+        {children ? children : text}
         <span className={underlineClass}></span>
       </Link>
     </li>
