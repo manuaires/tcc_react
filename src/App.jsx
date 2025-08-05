@@ -2,6 +2,7 @@ import { useState } from "react";
 import NavBar from "./components/navbar/NavBar.jsx";
 import SidebarCart from "./components/cart/SidebarCart.jsx";
 import { Outlet } from "react-router-dom";
+import Footer from "./components/footer/Footer.jsx";
 
 export default function App() {
   const [cartItems, setCartItems] = useState([]);
@@ -30,8 +31,6 @@ export default function App() {
     )
   );
 };
-
-
   return (
     <>
       <NavBar
@@ -46,6 +45,7 @@ export default function App() {
         updateQuantity={updateQuantity}
       />
       <Outlet context={{ addToCart }} />
+     
     </>
   );
 }

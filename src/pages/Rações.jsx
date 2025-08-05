@@ -9,6 +9,7 @@ export default function Rac() {
         <h1>Home</h1>
         <p>Esta é a página de Rações haha.</p>
       </div>
+      
     </>
   );
 }

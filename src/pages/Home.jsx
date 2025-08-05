@@ -5,13 +5,15 @@ import PreviewSection from "../components/prodpreview/PreviewSection.jsx";
 import AbPrevSection from "../components/aboutpreview/AbPrevSection.jsx";
 
 
+
 export default function Home() {
   return (
     <>
-      <Header image={HomeImg} />
+      <Header image={HomeImg} titulo="Juntos somos mais fortes" />
       <QualitiesSection />
       <PreviewSection />
       <AbPrevSection />
+      
     </>
   );
 }

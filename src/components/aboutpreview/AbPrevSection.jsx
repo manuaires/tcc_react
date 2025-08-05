@@ -14,7 +14,7 @@ export default function AbPrev() {
         <div className="flex flex-col-reverse lg:flex-row items-center gap-16">
           <div className="lg:w-1/2">
             <h2 className="text-3xl font-bold text-gray-700 mb-4">Sobre nós</h2>
-            <p className="text-green-600 font-semibold mb-3">jose bezerra. gostoso. sabor</p>
+            <p className="text-green-600 font-semibold mb-3">Do grão à entrega, com excelência.</p>
             <p className="text-gray-600 mb-4">
               Nosso objetivo é fornecer produtos frescos e de alta qualidade
               para nossos clientes, garantindo uma experiência de compra

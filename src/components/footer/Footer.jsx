@@ -1,10 +1,11 @@
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { CiPhone } from "react-icons/ci";
+import MapFooter from "./MapFooter.jsx";
 
 export default function Footer() {
   return (
     <footer>
-      <div className="bg-[#021209] py-5 font-sans w-full text-center">
+      <div className="bg-[#044a23] py-5 font-sans w-full text-center">
         {/* Redes sociais */}
         <div className="flex justify-center items-center mb-2">
           <a
@@ -40,12 +41,13 @@ export default function Footer() {
             </li>
           </ul>
         </div>
-
+    <MapFooter />
         {/* Direitos autorais */}
         <div className="my-2 py-2 text-gray-500 text-sm">
           RBS CEREAIS Copyright © 2022 RBS || Todos os direitos reservados
         </div>
       </div>
+
     </footer>
   );
 }
