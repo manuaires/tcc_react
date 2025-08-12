@@ -1,6 +1,6 @@
 import Header from "../components/header/Header";
 import CereaisImg from "../assets/cereais.png";
-import CardP from "../components/layout/Card";
+import ProdSection from "../components/layout/ProdSection";
 
 export default function Cereais() {
   return (
@@ -8,7 +8,11 @@ export default function Cereais() {
       <Header image={CereaisImg} />
       <div className="container">
       </div>
-      <CardP />
+      <ProdSection />
+      <ProdSection />
+      <ProdSection />
+      <ProdSection />
+
     </>
   );
 }
