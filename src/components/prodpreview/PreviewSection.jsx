@@ -1,6 +1,7 @@
 import { useState } from "react";
 import CardPrev from "./CardPrev.jsx";
 import Cereaisimg from "../../assets/cereais.png";
+import CardP from "../layout/Card.jsx";
 
 const categorias = ["Cereais", "Rações", "Variedades"];
 const produtos = [
@@ -86,13 +87,6 @@ const produtos = [
     nomeprod: "sla",
     preço: "5-10",
     categoria: "Variedades",
-    imagem: Cereaisimg,
-  },
-  {
-    id: 13,
-    nomeprod: "gatão",
-    preço: "5-10",
-    categoria: "Rações",
     imagem: Cereaisimg,
   },
 ];

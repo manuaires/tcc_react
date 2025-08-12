@@ -9,7 +9,7 @@ import AbPrevSection from "../components/aboutpreview/AbPrevSection.jsx";
 export default function Home() {
   return (
     <>
-      <Header image={HomeImg} titulo="Juntos somos mais fortes" />
+      <Header image={HomeImg} />
       <QualitiesSection />
       <PreviewSection />
       <AbPrevSection />
