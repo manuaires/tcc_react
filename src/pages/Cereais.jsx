@@ -1,18 +1,14 @@
 import Header from "../components/header/Header";
 import CereaisImg from "../assets/cereais.png";
-import ProdSection from "../components/layout/ProdSection";
+import CerealSection from "../components/layout/CerealSection";
 
 export default function Cereais() {
   return (
     <>
       <Header image={CereaisImg} />
-      <div className="container">
+      <div className="w-full flex justify-center items-center">
+        <CerealSection/>
       </div>
-      <ProdSection />
-      <ProdSection />
-      <ProdSection />
-      <ProdSection />
-
     </>
   );
 }
