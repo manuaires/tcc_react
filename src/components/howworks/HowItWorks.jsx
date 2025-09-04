@@ -3,23 +3,23 @@ import variedades from "../../assets/variedades.png";
 const steps = [
     {
         number:  "01",
-        title: "Choose Your Product",
-        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        title: "Escolha seus produtos",
+        description: "Navegue pelo nosso catálogo e selecione os produtos que você deseja comprar, escolhendo com facilidade e rapidez.",
     },
     {
         number:  "02",
-        title: "Add to Cart",
-        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        title: "Adicione ao carrinho",
+        description: "Clique no botão 'Compre Agora' para adicionar os produtos selecionados ao carrinho. Você pode ajustar a quantidade ou remover itens antes de finalizar a compra.",
     },
     {
         number:  "03",
-        title: "Secure Checkout",
-        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        title: "Confirme o pedido",
+        description: "Revise seu carrinho, confira os produtos, quantidades e valores. Complete seus dados e finalize a compra com segurança.",
     },
     {
         number:  "04",
-        title: "Fast Delivery",
-        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        title: "Entrega rápida",
+        description: "Receba seus produtos rapidamente no endereço informado. Acompanhe o status da entrega com o vendedor no WhatsApp e aproveite a experiência de compra completa.",
     }
 ];
 

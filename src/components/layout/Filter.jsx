@@ -8,7 +8,7 @@ import React, { useState } from "react";
 //   onFilter={filteredProducts => setProdutosFiltrados(filteredProducts)}
 // />
 
-const Filter = ({ options = [], products = [], filterKey = "", onFilter }) => {
+const Filter = ({ options = [], products = [], filterKey = "tipo", onFilter }) => {
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState([]);
 

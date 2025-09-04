@@ -1,12 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import NavBar from "./components/navbar/NavBar.jsx";
 import SidebarCart from "./components/cart/SidebarCart.jsx";
 import { Outlet } from "react-router-dom";
 import Footer from "./components/footer/Footer.jsx";
 
 export default function App() {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(() => {
+    // Recupera carrinho do localStorage ao iniciar
+    const saved = localStorage.getItem("cart");
+    return saved ? JSON.parse(saved) : [];
+  });
   const [cartOpen, setCartOpen] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cartItems));
+  }, [cartItems]);
 
   const addToCart = (product) => {
     setCartItems((prev) => {
@@ -31,6 +39,12 @@ export default function App() {
     )
   );
 };
+
+   const clearCart = () => {
+    setCartItems([]);
+    localStorage.removeItem("cart");
+  };
+
   return (
     <>
       <NavBar
@@ -43,6 +57,7 @@ export default function App() {
         cartItems={cartItems}
         removeFromCart={removeFromCart}
         updateQuantity={updateQuantity}
+        clearCart={clearCart}
       />
       <Outlet context={{ addToCart }} />
       <Footer />
