@@ -45,6 +45,7 @@ export default function App() {
         updateQuantity={updateQuantity}
       />
       <Outlet context={{ addToCart }} />
+      <Footer />
      
     </>
   );

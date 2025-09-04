@@ -3,7 +3,6 @@ import Home from "../pages/Home";
 import Cereais from "../pages/Cereais";
 import Rac from "../pages/Rações";
 import Var from "../pages/Variedades";
-import Sobre from "../pages/Sobre";
 import 'leaflet/dist/leaflet.css';
 
 
@@ -14,7 +13,6 @@ function AppRoutes() {
       <Route path="/racoes" element={<Rac />} />
       <Route path="/variedades" element={<Var />} />
       <Route path="/cereais" element={<Cereais />} />
-      <Route path="/sobre" element={<Sobre />} />
     </Routes>
   );
 }

@@ -49,7 +49,6 @@ export default function NavBar({ initialGreen = false, onCartClick, cartItems = 
         <Button link={"/cereais"} text={"Cereais"} />
         <Button link={"/racoes"} text={"Rações"} />
         <Button link={"/variedades"} text={"Variedades"} />
-        <Button link={"/sobre"} text={"Sobre"} />
       </ul>
       
       <ul className="flex items-center gap-3 justify-end">
@@ -93,7 +92,6 @@ export default function NavBar({ initialGreen = false, onCartClick, cartItems = 
                 { link: "/cereais", text: "Cereais" },
                 { link: "/racoes", text: "Rações" },
                 { link: "/variedades", text: "Variedades" },
-                { link: "/sobre", text: "Sobre" },
               ].map((item, idx) => (
                 <li
                   key={item.text}

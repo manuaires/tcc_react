@@ -1,12 +1,12 @@
 import img from "../../assets/cereais.png";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import AbPopUp from "./AbPopUp";
 
 export default function AbPrev() {
-  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
 
-  const irParaSobre = () => {
-    navigate("/sobre");
-  }
+  const abrirPopUp = () => setOpen(true);
+  const fecharPopUp = () => setOpen(false);
 
   return (
     <>
@@ -26,7 +26,7 @@ export default function AbPrev() {
               nossos clientes tenham uma experiência de compra agradável e
               satisfatória.
             </p>
-            <button onClick={irParaSobre} className="bg-green-700 hover:bg-green-800 text-white px-6 py-2 rounded transition">Saiba Mais</button>
+            <button onClick={abrirPopUp} className="bg-green-700 hover:bg-green-800 text-white px-6 py-2 rounded transition">Saiba Mais</button>
           </div>
           <div className="lg:w-1/2">
             <img
@@ -37,6 +37,7 @@ export default function AbPrev() {
           </div>
         </div>
       </section>
+      <AbPopUp open={open} onClose={fecharPopUp} />
     </>
   );
 }

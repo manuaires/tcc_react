@@ -3,7 +3,7 @@ import HomeImg from "../assets/home.png";
 import QualitiesSection from "../components/qualities/QualitiesSection.jsx";
 import PreviewSection from "../components/prodpreview/PreviewSection.jsx";
 import AbPrevSection from "../components/aboutpreview/AbPrevSection.jsx";
-
+import HowItWorks from "../components/howworks/HowItWorks.jsx";
 
 
 export default function Home() {
@@ -13,6 +13,7 @@ export default function Home() {
       <QualitiesSection />
       <PreviewSection />
       <AbPrevSection />
+      <HowItWorks />
       
     </>
   );

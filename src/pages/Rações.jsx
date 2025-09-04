@@ -1,13 +1,13 @@
 import Header from "../components/header/Header";
 import RacImg from "../assets/racoes.png";
+import RacaoSection from "../components/layout/RacaoSection";
 
 export default function Rac() {
   return (
     <>
       <Header image={RacImg} />
-      <div className="container">
-        <h1>Home</h1>
-        <p>Esta é a página de Rações haha.</p>
+      <div>
+        <RacaoSection />
       </div>
       
     </>
