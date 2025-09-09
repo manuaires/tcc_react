@@ -1,0 +1,16 @@
+return (
+        <div className="bg-white p-4 border border-gray-300 rounded-lg shadow-sm">
+            <h3 className="font-semibold mb-4">Filtros</h3>
+            {options.map((opt) => (
+                <label key={opt.value} className="block mb-2">
+                    <input
+                        type="checkbox"
+                        checked={selected.includes(opt.value)}
+                        onChange={() => handleSelect(opt.value)}
+                        className="mr-2"
+                    />
+                    {opt.label}
+                </label>
+            ))}
+        </div>
+    );
