@@ -1,34 +1,24 @@
 import { useState } from "react";
 import { produtos } from "./dbteste";
 import ProdSection from "./ProdSection";
-import Filter from "./Filter";
 import { FaSearch } from "react-icons/fa";
 
 export default function RacaoSection() {
   const [searchTerm, setSearchTerm] = useState("");
   const [produtosFiltrados, setProdutosFiltrados] = useState(
-    produtos.filter(p => p.categoria.toLowerCase() === "rações")
+    produtos.filter((p) => p.categoria.toLowerCase() === "rações")
   );
-
-  const filterOptions = [
-    { label: "Gato", value: "gato" },
-    { label: "Cachorro", value: "cachorro" },
-    { label: "Boi", value: "boi" },
-    { label: "Cavalo", value: "cavalo" },
-    { label: "Porco", value: "porco" },
-    { label: "Galinha", value: "galinha" },
-    { label: "Peixe", value: "peixe" },
-    { label: "Coelho", value: "coelho" },
-  ];
 
   // Filtra produtos por busca
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
 
-    const produtosCategoria = produtos.filter(p => p.categoria.toLowerCase() === "rações");
+    const produtosCategoria = produtos.filter(
+      (p) => p.categoria.toLowerCase() === "rações"
+    );
 
-    const filtradosPorBusca = produtosCategoria.filter(p =>
+    const filtradosPorBusca = produtosCategoria.filter((p) =>
       p.nomeprod.toLowerCase().includes(term)
     );
 
@@ -47,16 +37,9 @@ export default function RacaoSection() {
             placeholder="Buscar ração..."
             value={searchTerm}
             onChange={handleSearch}
-            className="border border-gray-300 rounded px-4 py-2 pl-10 w-full focus:outline-none focus:ring-2 focus:ring-green-600"
+            className="border border-gray-300 rounded-2xl px-4 py-2 pl-10 w-full focus:outline-none focus:ring-2 focus:ring-green-600"
           />
         </div>
-
-        <Filter
-          options={filterOptions}
-          products={produtos.filter(p => p.categoria.toLowerCase() === "rações")}
-          filterKey="tipo"
-          onFilter={setProdutosFiltrados}
-        />
       </div>
 
       <ProdSection produtos={produtosFiltrados} />

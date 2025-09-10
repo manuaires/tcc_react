@@ -1,6 +1,6 @@
 import { useState } from "react";
 import CardPrev from "./CardPrev.jsx";
-import Cereaisimg from "../../assets/cereais.png";
+import Milho from "../../assets/produtos/image.png";
 import CardP from "../layout/Card.jsx";
 
 const categorias = ["Cereais", "Rações", "Variedades"];
@@ -10,84 +10,84 @@ const produtos = [
     nomeprod: "Milho",
     preço: "50",
     categoria: "Cereais",
-    imagem: "src/assets/produtos/image.png",
+    imagem: Milho,
   },
   {
     id: 2,
     nomeprod: "Arroz",
     preço: "5-15",
     categoria: "Cereais",
-    imagem: Cereaisimg,
+    imagem: Milho,
   },
   {
     id: 3,
     nomeprod: "Gato",
     preço: "3-8",
     categoria: "Rações",
-    imagem: Cereaisimg,
+    imagem: Milho,
   },
   {
     id: 4,
     nomeprod: "Gatinho",
     preço: "4-10",
     categoria: "Rações",
-    imagem: Cereaisimg,
+    imagem: Milho,
   },
   {
     id: 5,
     nomeprod: "Formilix",
     preço: "7-12",
     categoria: "Variedades",
-    imagem: Cereaisimg,
+    imagem: Milho,
   },
   {
     id: 6,
     nomeprod: "Adubo",
     preço: "6-14",
     categoria: "Variedades",
-    imagem: Cereaisimg,
+    imagem: Milho,
   },
   {
     id: 7,
     nomeprod: "jabu",
     preço: "8-18",
     categoria: "Cereais",
-    imagem: Cereaisimg,
+    imagem: Milho,
   },
   {
     id: 8,
     nomeprod: "Cachorro",
     preço: "5-10",
     categoria: "Rações",
-    imagem: Cereaisimg,
+    imagem: Milho,
   },
   {
     id: 9,
     nomeprod: "Sal blokus",
     preço: "4-9",
     categoria: "Variedades",
-    imagem: Cereaisimg,
+    imagem: Milho,
   },
   {
     id: 10,
     nomeprod: "Alfredo",
     preço: "12-22",
     categoria: "Cereais",
-    imagem: Cereaisimg,
+    imagem: Milho,
   },
   {
     id: 11,
     nomeprod: "Cachorrinho",
     preço: "6-11",
     categoria: "Rações",
-    imagem: Cereaisimg,
+    imagem: Milho,
   },
   {
     id: 12,
     nomeprod: "sla",
     preço: "5-10",
     categoria: "Variedades",
-    imagem: Cereaisimg,
+    imagem: Milho,
   },
 ];
 

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { produtos } from "./dbteste";
 import ProdSection from "./ProdSection";
-import Filter from "./Filter";
 import { FaSearch } from "react-icons/fa";
 
 export default function CerealSection() {
@@ -10,16 +9,7 @@ export default function CerealSection() {
     produtos.filter(p => p.categoria.toLowerCase() === "cereais")
   );
 
-  const filterOptions = [
-    { label: "Arroz", value: "arroz" },
-    { label: "Aveia", value: "aveia" },
-    { label: "Farelo", value: "farelo" },
-    { label: "Fubá", value: "fuba" },
-    { label: "Milho", value: "milho" },
-    { label: "Quirera", value: "quirera" },
-  ];
-
-  // Aplica filtro por busca + filtro por tipo
+  // Filtra produtos por busca
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
@@ -45,16 +35,9 @@ export default function CerealSection() {
             placeholder="Buscar cereal..."
             value={searchTerm}
             onChange={handleSearch}
-            className="border border-gray-300 rounded px-4 py-2 pl-10 w-full focus:outline-none focus:ring-2 focus:ring-green-600"
+            className="border border-gray-300 rounded-2xl mb-2 py-2 pl-10 w-full focus:outline-none focus:ring-2 focus:ring-green-600"
           />
         </div>
-
-        <Filter
-          options={filterOptions}
-          products={produtos.filter(p => p.categoria.toLowerCase() === "cereais")}
-          filterKey="tipo"
-          onFilter={setProdutosFiltrados}
-        />
       </div>
 
       <ProdSection produtos={produtosFiltrados} />

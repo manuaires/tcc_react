@@ -1,4 +1,4 @@
-import Cereaisimg from "../../assets/cereais.png";
+import Milho from "../../assets/produtos/image.png"
 
 export const produtos = [
   {
@@ -6,7 +6,7 @@ export const produtos = [
     nomeprod: "Milho",
     preço: "50",
     categoria: "Cereais",
-    imagem: "src/assets/produtos/image.png",
+    imagem: Milho,
     tipo: "milho",
   },
   {
@@ -14,7 +14,7 @@ export const produtos = [
     nomeprod: "farelo",
     preço: "5-15",
     categoria: "Cereais",
-    imagem: Cereaisimg,
+    imagem: Milho,
     tipo: "farelo",
   },
   {
@@ -22,7 +22,7 @@ export const produtos = [
     nomeprod: "Gato",
     preço: "3-8",
     categoria: "Rações",
-    imagem: Cereaisimg,
+    imagem: Milho,
     tipo: "gato",
   },
   {
@@ -30,7 +30,7 @@ export const produtos = [
     nomeprod: "cahorro",
     preço: "4-10",
     categoria: "Rações",
-    imagem: Cereaisimg,
+    imagem: Milho,
     tipo: "cachorro",
   },
   {
@@ -38,7 +38,7 @@ export const produtos = [
     nomeprod: "formilix",
     preço: "3-8",
     categoria: "Variedades",
-    imagem: Cereaisimg,
+    imagem: Milho,
     tipo: "veneno",
   },
   {
@@ -46,8 +46,24 @@ export const produtos = [
     nomeprod: "carvao",
     preço: "4-10",
     categoria: "Variedades",
-    imagem: Cereaisimg,
+    imagem: Milho,
     tipo: "carvão",
+  },
+  {
+    id: 7,
+    nomeprod: "Milho",
+    preço: "50",
+    categoria: "Cereais",
+    imagem: Milho,
+    tipo: "milho",
+  },
+  {
+    id: 8,
+    nomeprod: "farelo",
+    preço: "5-15",
+    categoria: "Cereais",
+    imagem: Milho,
+    tipo: "farelo",
   },
   
 ];

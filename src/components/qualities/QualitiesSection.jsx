@@ -8,7 +8,7 @@ export default function QualitiesSection() {
   return (
     <section className="w-full py-16">
       <h2 className="text-center text-3xl mt-8 mb-8 font-bold text-gray-800">
-        Porquê nos escolher?
+        Por que nos escolher?
       </h2>
       <div className="container mx-auto px-2 sm:px-4">
         <div className="flex flex-wrap mb-5 justify-center items-center gap-8 md:gap-14 w-full">

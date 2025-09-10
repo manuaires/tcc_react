@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { produtos } from "./dbteste";
 import ProdSection from "./ProdSection";
-import Filter from "./Filter";
 import { FaSearch } from "react-icons/fa";
 
 export default function VarSection() {
@@ -9,17 +8,6 @@ export default function VarSection() {
   const [produtosFiltrados, setProdutosFiltrados] = useState(
     produtos.filter(p => p.categoria.toLowerCase() === "variedades")
   );
-
-  const filterOptions = [
-    { label: "Adubo", value: "adubo" },
-    { label: "Areia", value: "areia" },
-    { label: "Carvão", value: "carvão" },
-    { label: "Venenos", value: "veneno" },
-    { label: "Ivermectina", value: "ivermectina" },
-    { label: "Sal", value: "sal" },
-    { label: "Silagem", value: "silagem" },
-    { label: "Ureia", value: "ureia" },
-  ];
 
   // Filtra produtos por busca
   const handleSearch = (e) => {
@@ -46,21 +34,12 @@ export default function VarSection() {
           </span>
           <input
             type="text"
-            placeholder="Buscar variedade..."
+            placeholder="Buscar produto..."
             value={searchTerm}
             onChange={handleSearch}
-            className="border border-gray-300 rounded px-4 py-2 pl-10 w-full focus:outline-none focus:ring-2 focus:ring-green-600"
+            className="border border-gray-300 rounded-2xl px-4 py-2 pl-10 w-full focus:outline-none focus:ring-2 focus:ring-green-600"
           />
         </div>
-
-        <Filter
-          options={filterOptions}
-          products={produtos.filter(
-            p => p.categoria.toLowerCase() === "variedades"
-          )}
-          filterKey="tipo"
-          onFilter={setProdutosFiltrados}
-        />
       </div>
 
       <ProdSection produtos={produtosFiltrados} />
