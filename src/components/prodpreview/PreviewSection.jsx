@@ -1,104 +1,27 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CardPrev from "./CardPrev.jsx";
-import Milho from "../../assets/produtos/image.png";
-import CardP from "../layout/Card.jsx";
-
-const categorias = ["Cereais", "Rações", "Variedades"];
-const produtos = [
-  {
-    id: 1,
-    nomeprod: "Milho",
-    preço: "50",
-    categoria: "Cereais",
-    imagem: Milho,
-  },
-  {
-    id: 2,
-    nomeprod: "Arroz",
-    preço: "5-15",
-    categoria: "Cereais",
-    imagem: Milho,
-  },
-  {
-    id: 3,
-    nomeprod: "Gato",
-    preço: "3-8",
-    categoria: "Rações",
-    imagem: Milho,
-  },
-  {
-    id: 4,
-    nomeprod: "Gatinho",
-    preço: "4-10",
-    categoria: "Rações",
-    imagem: Milho,
-  },
-  {
-    id: 5,
-    nomeprod: "Formilix",
-    preço: "7-12",
-    categoria: "Variedades",
-    imagem: Milho,
-  },
-  {
-    id: 6,
-    nomeprod: "Adubo",
-    preço: "6-14",
-    categoria: "Variedades",
-    imagem: Milho,
-  },
-  {
-    id: 7,
-    nomeprod: "jabu",
-    preço: "8-18",
-    categoria: "Cereais",
-    imagem: Milho,
-  },
-  {
-    id: 8,
-    nomeprod: "Cachorro",
-    preço: "5-10",
-    categoria: "Rações",
-    imagem: Milho,
-  },
-  {
-    id: 9,
-    nomeprod: "Sal blokus",
-    preço: "4-9",
-    categoria: "Variedades",
-    imagem: Milho,
-  },
-  {
-    id: 10,
-    nomeprod: "Alfredo",
-    preço: "12-22",
-    categoria: "Cereais",
-    imagem: Milho,
-  },
-  {
-    id: 11,
-    nomeprod: "Cachorrinho",
-    preço: "6-11",
-    categoria: "Rações",
-    imagem: Milho,
-  },
-  {
-    id: 12,
-    nomeprod: "sla",
-    preço: "5-10",
-    categoria: "Variedades",
-    imagem: Milho,
-  },
-];
+import api from "../../api";
 
 export default function PreviewSection() {
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState(
-    categorias[0]
-  );
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
+  const [produtos, setProdutos] = useState([]);
 
-  const produtosFiltrados = produtos.filter(
-    (p) => p.categoria === categoriaSelecionada
-  );
+  useEffect(() => {
+    const fetchProdutos = async () => {
+      try {
+        const response = await api.get("/produtos");
+        setProdutos(response.data);
+        //setCategoriaSelecionada(response.data.)
+      } catch (error) {
+        console.error("Erro ao buscar produtos:", error);
+      }
+    };
+
+    fetchProdutos();
+  }, []);
+
+  /*const produtosFiltrados = produtos.filter( (item) => item.Id_categ === categoriaSelecionada );*/ 
+  const produtosFiltrados = produtos.filter((item) => item.Id_categ = categoriaSelecionada);
 
   return (
     <section className="w-full bg-gray-100 py-16 px-4">
@@ -115,22 +38,26 @@ export default function PreviewSection() {
                 categoriaSelecionada === cat
                   ? "border-green-600"
                   : "border-transparent"
-              } hover:border-green-700 transition`} 
+              } hover:border-green-700 transition`}
             >
               {cat}
             </button>
           ))}
         </div>
         <div className="flex flex-wrap justify-center gap-6">
-          {produtosFiltrados.slice(0, 4).map((prod) => (
-            <CardPrev
-              key={prod.id}
-              id={prod.id}
-              nomeprod={prod.nomeprod}
-              preço={prod.preço}
-              imagem={prod.imagem}
-            />
-          ))}
+          {produtosFiltrados.length > 0 ? (
+            produtosFiltrados.slice(0, 4).map((item) => (
+              <CardPrev
+                key={item.Id_prod}
+                id={item.Id_prod}
+                nomeprod={item.Nome_prod}
+                preço={item.Preco_prod}
+                imagem={item.Foto}
+              />
+            ))
+          ) : (
+            <p>Carregando produtos...</p>
+          )}
         </div>
       </div>
     </section>

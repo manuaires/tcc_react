@@ -7,6 +7,7 @@ import Cereais from './pages/Cereais.jsx'
 import Rac from './pages/Rações.jsx'
 import Var from './pages/Variedades.jsx'
 import App from './App.jsx'
+import View from './pages/View.jsx'
 
 
 const router = createBrowserRouter([
@@ -18,6 +19,8 @@ const router = createBrowserRouter([
       { path: "/cereais", element: <Cereais /> },
       { path: "/racoes", element: <Rac /> },
       { path: "/variedades", element: <Var /> },
+      { path: "/view/:id", element: <View /> },
+
     ],
   },
 ]);
