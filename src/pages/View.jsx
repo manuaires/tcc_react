@@ -28,10 +28,6 @@ export default function View() {
       <h1 className="text-2xl font-bold mb-4">{produto.Nome_prod}</h1>
 
       <p className="italic text-gray-500">Sem imagem</p>
-
-      <p>
-        <strong>ID:</strong> {produto.Id_prod}
-      </p>
       <p>
         <strong>Preço:</strong> R$ {Number(produto.Preco_prod).toFixed(2)}
       </p>
@@ -40,9 +36,6 @@ export default function View() {
       </p>
       <p>
         <strong>Categoria:</strong> {produto.Nome_categ}
-      </p>
-      <p>
-        <strong>Código:</strong> {produto.Codigo_prod}
       </p>
       {produto.Peso_prod && (
         <p>

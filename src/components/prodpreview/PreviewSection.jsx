@@ -5,23 +5,27 @@ import api from "../../api";
 export default function PreviewSection() {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
   const [produtos, setProdutos] = useState([]);
+  const [categorias, setCategorias] = useState([]);
 
   useEffect(() => {
-    const fetchProdutos = async () => {
+    const fetchAll = async () => {
       try {
-        const response = await api.get("/produtos");
-        setProdutos(response.data);
-        //setCategoriaSelecionada(response.data.)
+        const produtos = await api.get("/produtos");
+        const categorias = await api.get("/categorias");
+        setProdutos(produtos.data);
+        setCategorias(categorias.data.map((cat) => cat.Nome_categ));
+        setCategoriaSelecionada(categorias.data[0].Nome_categ);
       } catch (error) {
         console.error("Erro ao buscar produtos:", error);
       }
     };
 
-    fetchProdutos();
+    fetchAll();
   }, []);
 
-  /*const produtosFiltrados = produtos.filter( (item) => item.Id_categ === categoriaSelecionada );*/ 
-  const produtosFiltrados = produtos.filter((item) => item.Id_categ = categoriaSelecionada);
+  const produtosFiltrados = produtos.filter(
+    (item) => item.Nome_categ === categoriaSelecionada
+  );
 
   return (
     <section className="w-full bg-gray-100 py-16 px-4">
@@ -46,15 +50,17 @@ export default function PreviewSection() {
         </div>
         <div className="flex flex-wrap justify-center gap-6">
           {produtosFiltrados.length > 0 ? (
-            produtosFiltrados.slice(0, 4).map((item) => (
-              <CardPrev
-                key={item.Id_prod}
-                id={item.Id_prod}
-                nomeprod={item.Nome_prod}
-                preço={item.Preco_prod}
-                imagem={item.Foto}
-              />
-            ))
+            produtosFiltrados
+              .slice(0, 4)
+              .map((item) => (
+                <CardPrev
+                  key={item.Id_prod}
+                  id={item.Id_prod}
+                  nomeprod={item.Nome_prod}
+                  preço={item.Preco_prod}
+                  imagem={item.Foto}
+                />
+              ))
           ) : (
             <p>Carregando produtos...</p>
           )}

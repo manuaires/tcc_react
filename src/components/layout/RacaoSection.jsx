@@ -1,29 +1,35 @@
-import { useState } from "react";
-import { produtos } from "./dbteste";
+import { useState, useEffect } from "react";
+import api from "../../api";
 import ProdSection from "./ProdSection";
 import { FaSearch } from "react-icons/fa";
 
 export default function RacaoSection() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [produtosFiltrados, setProdutosFiltrados] = useState(
-    produtos.filter((p) => p.categoria.toLowerCase() === "rações")
-  );
+  const [produtosFiltrados, setProdutosFiltrados] = useState([]);
+  const [produtos, setProdutos] = useState([]);
+
+  useEffect(() => {
+    const fetchProdutos = async () => {
+      try {
+        const response = await api.get("/produtos");
+        setProdutos(
+          response.data.filter((p) => p.Nome_categ.toLowerCase() === "ração")
+        );
+      } catch (error) {
+        console.error("Erro ao buscar produtos:", error);
+      }
+    };
+
+    fetchProdutos();
+  }, []);
 
   // Filtra produtos por busca
-  const handleSearch = (e) => {
-    const term = e.target.value.toLowerCase();
-    setSearchTerm(term);
-
-    const produtosCategoria = produtos.filter(
-      (p) => p.categoria.toLowerCase() === "rações"
+  useEffect(() => {
+    const filtered = produtos.filter((produto) =>
+      produto.Nome_prod.toLowerCase().includes(searchTerm.toLowerCase())
     );
-
-    const filtradosPorBusca = produtosCategoria.filter((p) =>
-      p.nomeprod.toLowerCase().includes(term)
-    );
-
-    setProdutosFiltrados(filtradosPorBusca);
-  };
+    setProdutosFiltrados(filtered);
+  }, [searchTerm, produtos]);
 
   return (
     <section className="py-15 flex flex-col justify-center items-center w-full gap-8">
@@ -36,7 +42,7 @@ export default function RacaoSection() {
             type="text"
             placeholder="Buscar ração..."
             value={searchTerm}
-            onChange={handleSearch}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="border border-gray-300 rounded-2xl px-4 py-2 pl-10 w-full focus:outline-none focus:ring-2 focus:ring-green-600"
           />
         </div>

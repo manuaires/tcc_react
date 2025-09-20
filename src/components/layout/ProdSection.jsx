@@ -1,16 +1,16 @@
 import CardProd from "./Card";
 
-export default function ProdSection({ produtos = [] }) {
+export default function ProdSection({ produtos }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
       {produtos.length > 0 ? (
         produtos.map((p) => (
           <CardProd
-            key={p.id}
-            id={p.id}
-            nomeprod={p.nomeprod}
-            preço={p.preço}
-            imagem={p.imagem}
+            key={p.Id_prod}
+            id={p.Id_prod}
+            nomeprod={p.Nome_prod}
+            preço={p.Preco_prod}
+            imagem={p.Foto_prod}
           />
         ))
       ) : (
