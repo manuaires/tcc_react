@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import api from "../api";
+import { Link } from "react-router-dom";
 
 export default function Register() {
-  const [formData, setFormData] = useState();
+  const [formData, setFormData] = useState({}); // Inicializa como objeto vazio
 
   useEffect(() => {
     const fetchColumns = async () => {
@@ -34,8 +35,19 @@ export default function Register() {
     // axios.post("/clientes", formData)
   };
 
+  // Só renderiza o formulário se formData estiver pronto
+  if (!formData || Object.keys(formData).length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center  bg-gray-100 p-4">
+        <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md text-center">
+          Carregando...
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-green-100 to-green-300 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
         <h2 className="text-2xl font-bold text-center text-green-700 mb-6">
           Cadastro de Cliente
@@ -110,9 +122,9 @@ export default function Register() {
 
         <p className="text-center text-sm text-gray-600 mt-4">
           Já tem uma conta?{" "}
-          <a href="/login" className="text-green-600 hover:underline">
+          <Link to="/login" className="text-green-600 hover:underline">
             Faça login
-          </a>
+          </Link>
         </p>
       </div>
     </div>

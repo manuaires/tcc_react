@@ -9,6 +9,8 @@ import Var from "./pages/Variedades.jsx";
 import App from "./App.jsx";
 import View from "./pages/View.jsx";
 import GerenciarProdutos from "./admin/GerenciarProdutos.jsx";
+import Register from "./pages/Register.jsx";
+import Login from "./pages/Login.jsx";
 
 const router = createBrowserRouter([
   {
@@ -21,6 +23,8 @@ const router = createBrowserRouter([
       { path: "/variedades", element: <Var /> },
       { path: "/view/:id", element: <View /> },
       { path: "/admin", element: <GerenciarProdutos /> },
+      {path: "/register", element: <Register /> },
+      {path: "/login", element: <Login /> },
     ],
   },
 ]);

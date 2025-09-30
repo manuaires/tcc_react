@@ -1,12 +1,13 @@
 import React from "react";
+import { FaUserCircle } from "react-icons/fa";
 
 export default function ButtonLog({ onClick }) {
   return (
     <button
-      className="bg-[#044a23] text-white px-4 py-2 rounded hover:bg-[#056c34] transition-colors duration-300"
+      className="relative text-white px-4 py-1 rounded"
       onClick={onClick}
     >
-      Login
+      <FaUserCircle className="size-6" />
     </button>
   );
 }

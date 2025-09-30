@@ -1,4 +1,4 @@
-import img from "../../assets/cereais.png";
+import img from "../../assets/about.png";
 import { useState } from "react";
 import AbPopUp from "./AbPopUp";
 

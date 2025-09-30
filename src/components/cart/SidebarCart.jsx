@@ -4,10 +4,6 @@ import { IoSend } from "react-icons/io5";
 import React from "react";
 
 export default function SidebarCart({ isOpen, onClose, cartItems, removeFromCart, updateQuantity, clearCart }) {
-     const total = cartItems.reduce((sum, item) => {
-        const preco = parseFloat(item.preço?.split("-")[0]) || 0;
-        return sum + preco * item.quantity;
-    }, 0);
     return (
     <>
       {/* Fundo escuro quando aberto */}
@@ -44,13 +40,10 @@ export default function SidebarCart({ isOpen, onClose, cartItems, removeFromCart
         )}
       </div>
 
-        <div className="my-4">
-          <b>Total:</b>  R$ {total.toFixed(2)}
-        </div>
 
         {cartItems.length > 0 && (
           <button
-            className="bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded w-full flex items-center justify-center gap-2"
+            className="bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded w-full flex items-center justify-center gap-2 mt-2"
             onClick={() => {
               // aqui você pode integrar com API futuramente
               alert("Pedido enviado com sucesso!");

@@ -6,12 +6,13 @@ import Button from "./ButtonNav.jsx";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCartShopping } from "@fortawesome/free-solid-svg-icons";
 import SidebarCart from "../cart/SidebarCart.jsx";
+import ButtonLog from "./ButtonLog.jsx";
 
 export default function NavBar({ initialGreen = false, onCartClick, cartItems = []  }) { 
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  
+
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 0);
@@ -59,6 +60,7 @@ export default function NavBar({ initialGreen = false, onCartClick, cartItems = 
             {cartItems?.reduce((total, item) => total + item.quantity, 0) || 0}
           </div>
         </button>
+        <ButtonLog link={"/login"} />
       </ul>
       
 

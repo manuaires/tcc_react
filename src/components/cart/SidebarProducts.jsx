@@ -2,8 +2,6 @@ import { FaXmark } from 'react-icons/fa6';
 import React from 'react';
 
 export default function SidebarProducts({ item, onRemove,  onUpdateQty }) {
-        const precoBase = parseFloat(item.preço?.split("-")[0]) || 0;
-        const precoTotal = precoBase * item.quantity;
 
         const handleChange = (e) => {
             const newQty = parseInt(e.target.value, 10);
@@ -23,7 +21,6 @@ export default function SidebarProducts({ item, onRemove,  onUpdateQty }) {
 
         <div className="flex flex-col">
           <h4 className="font-semibold">{item?.nomeprod || "Produto"}</h4>
-          <p className="text-gray-700">R$ {precoTotal.toFixed(2)}</p>
           <input
             type="number"
             min={1}

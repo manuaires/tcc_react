@@ -19,7 +19,7 @@ export default function QualitiesSection() {
             }
             texto={
               <span className="text-gray-600 text-sm">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                Produtos naturais que respeitam o solo, as plantas e os animais.
               </span>
             }
           />
@@ -32,7 +32,7 @@ export default function QualitiesSection() {
             }
             texto={
               <span className="text-gray-600 text-sm">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                Seu pedido chega até você com agilidade e segurança.
               </span>
             }
           />
@@ -43,7 +43,7 @@ export default function QualitiesSection() {
             }
             texto={
               <span className="text-gray-600 text-sm">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+               Construímos confiança e valorizamos cada cliente.
               </span>
             }
           />
@@ -56,7 +56,7 @@ export default function QualitiesSection() {
             }
             texto={
               <span className="text-gray-600 text-sm">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                Garantia de satisfação para o produtor em todas as etapas.
               </span>
             }
           />
