@@ -9,7 +9,12 @@ import HowItWorks from "../components/howworks/HowItWorks.jsx";
 export default function Home() {
   return (
     <>
-      <Header image={HomeImg} />
+      <div className="block md:hidden">
+        <HeaderMobile image={HomeImg} />
+      </div>
+      <div className="hidden md:block">
+        <Header image={HomeImg} />
+      </div>
       <QualitiesSection />
       <PreviewSection />
       <AbPrevSection />
