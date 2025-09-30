@@ -45,17 +45,17 @@ export default function NavBar({ initialGreen = false, onCartClick, cartItems = 
 
        
 
-      <ul className="hidden [@media(min-width:860px)]:flex items-center gap-3 flex-1 justify-center">
+      <ul className="hidden [@media(min-width:860px)]:flex items-center gap-1 flex-1 justify-center">
         <Button link={"/"} text={"Home"} />
         <Button link={"/cereais"} text={"Cereais"} />
         <Button link={"/racoes"} text={"Rações"} />
         <Button link={"/variedades"} text={"Variedades"} />
       </ul>
       
-      <ul className="flex items-center gap-3 justify-end">
+      <ul className="flex items-center gap-1 justify-end">
        <button
           onClick={onCartClick}
-          className="shopping-cart relative text-white mr-4">  <FontAwesomeIcon icon={faCartShopping} size="lg" />
+          className="shopping-cart relative text-white">  <FontAwesomeIcon icon={faCartShopping} size="lg" />
           <div className="products-count products-count absolute -top-2 -right-2 bg-red-600 text-white text-xs w-[18px] h-[18px] flex items-center justify-center rounded-full">
             {cartItems?.reduce((total, item) => total + item.quantity, 0) || 0}
           </div>
@@ -80,7 +80,7 @@ export default function NavBar({ initialGreen = false, onCartClick, cartItems = 
             className="absolute inset-0 bg-black opacity-40"
             onClick={() => setMenuOpen(false)}
           ></div>
-          <div className="absolute top-0 right-0 h-full w-64 bg-[#021209] shadow-lg flex flex-col p-6 animate-drawerSlide">
+          <div className="absolute top-0 right-0 h-full w-64 bg-[#044a23] shadow-lg flex flex-col p-6 animate-drawerSlide">
             <button
               className="self-end mb-6 text-[#fdf6ed] text-2xl"
               onClick={() => setMenuOpen(false)}
