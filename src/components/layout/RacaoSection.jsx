@@ -13,7 +13,7 @@ export default function RacaoSection() {
       try {
         const response = await api.get("/produtos");
         setProdutos(
-          response.data.filter((p) => p.Nome_categ.toLowerCase() === "ração")
+          response.data.filter((p) => p.Categoria.toLowerCase() === "ração")
         );
       } catch (error) {
         console.error("Erro ao buscar produtos:", error);
@@ -26,7 +26,7 @@ export default function RacaoSection() {
   // Filtra produtos por busca
   useEffect(() => {
     const filtered = produtos.filter((produto) =>
-      produto.Nome_prod.toLowerCase().includes(searchTerm.toLowerCase())
+      produto.Nome.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setProdutosFiltrados(filtered);
   }, [searchTerm, produtos]);

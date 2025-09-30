@@ -5,13 +5,7 @@ export default function ProdSection({ produtos }) {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
       {produtos.length > 0 ? (
         produtos.map((p) => (
-          <CardProd
-            key={p.Id_prod}
-            id={p.Id_prod}
-            nomeprod={p.Nome_prod}
-            preço={p.Preco_prod}
-            imagem={p.Foto_prod}
-          />
+          <CardProd key={p.Id} id={p.Id} nomeprod={p.Nome} imagem={p.Foto} />
         ))
       ) : (
         <p className="text-gray-500">Nenhum produto encontrado.</p>

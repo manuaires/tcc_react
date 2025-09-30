@@ -13,9 +13,7 @@ export default function VarSection() {
       try {
         const response = await api.get("/produtos");
         setProdutos(
-          response.data.filter(
-            (p) => p.Nome_categ.toLowerCase() === "variedades"
-          )
+          response.data.filter((p) => p.Categoria.toLowerCase() === "variedade")
         );
       } catch (error) {
         console.error("Erro ao buscar produtos:", error);
@@ -27,7 +25,7 @@ export default function VarSection() {
 
   useEffect(() => {
     const filtered = produtos.filter((produto) =>
-      produto.Nome_prod.toLowerCase().includes(searchTerm.toLowerCase())
+      produto.Nome.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setProdutosFiltrados(filtered);
   }, [searchTerm, produtos]);
