@@ -4,6 +4,8 @@ import QualitiesSection from "../components/qualities/QualitiesSection.jsx";
 import PreviewSection from "../components/prodpreview/PreviewSection.jsx";
 import AbPrevSection from "../components/aboutpreview/AbPrevSection.jsx";
 import HowItWorks from "../components/howworks/HowItWorks.jsx";
+import HeaderMobile from "../components/header/HeaderMobile.jsx"; // Crie este componente para mobile
+
 
 
 export default function Home() {

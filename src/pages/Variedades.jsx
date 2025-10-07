@@ -1,6 +1,8 @@
 import Header from "../components/header/Header";
 import VarImg from "../assets/variedades.png";
 import VarSection from "../components/layout/VarSection";
+import HeaderMobile from "../components/header/HeaderMobile.jsx"; // Crie este componente para mobile
+
 
 export default function Var() {
   return (

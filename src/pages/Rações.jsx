@@ -1,6 +1,8 @@
 import Header from "../components/header/Header";
 import RacImg from "../assets/racoes.png";
 import RacaoSection from "../components/layout/RacaoSection";
+import HeaderMobile from "../components/header/HeaderMobile.jsx"; // Crie este componente para mobile
+
 
 export default function Rac() {
   return (
