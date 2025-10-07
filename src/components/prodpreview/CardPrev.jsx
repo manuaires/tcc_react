@@ -19,7 +19,7 @@ export default function CardPrev({ id, nomeprod, imagem }) {
         onClick={handleAdd}
         className="bg-green-700 w-full h-8 hover:bg-green-800 text-sm mt-4 text-white rounded-sm"
       >
-        Compre Agora
+        Vizualizar Produto
       </button>
     </div>
   );

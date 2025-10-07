@@ -1,6 +1,5 @@
 add infos no footer (icons, redes sociais, etc.)
 img como funciona
-mudar texto botão cards
 api register
 pg view
 pg gerenciar produto

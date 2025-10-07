@@ -5,9 +5,10 @@ const Footer = () => (
     <div className="max-w-8xl mx-auto flex flex-wrap flex-col md:flex-row justify-between items-stretch gap-2 md:gap-4 md:ml-12 md:mr-40">
       <div className="flex flex-col items-start gap-2 w-full sm:w-1/2 md:w-1/4 min-w-[180px] max-w-full md:max-w-xs">
         <h3 className="text-lg mt-4 font-semibold mb-2">Contato</h3>
-        <span>(15) 99999-9999</span>
-        <span>rbs@paidamanutwink.com</span>
-        <span>Endereço: Rua da Lavinia, 123 - Centro</span>
+        <span>(15) 99846-6946</span>
+        <span>(15) 99747-4223</span>
+        <span>(15) 99629-4597</span>
+        <span>rbscomerciocereais@gmail.com</span>
       </div>
       {/* Coluna Redes Sociais */}
       <div className="flex flex-col items-start gap-2 w-full sm:w-1/2 md:w-1/4 min-w-[180px] max-w-full md:max-w-xs">
@@ -17,7 +18,7 @@ const Footer = () => (
         <span>Instagram: @blabla</span>
       </div>
      
-      <div className="w-full sm:w-1/2 md:w-2/5 mt-6 md:mt-4 flex justify-center md:justify-end min-w-[220px] max-w-full">
+      <div className="w-full sm:w-1/2 md:w-2/5 mt-6 md:mt-4 flex flex-col justify-center md:justify-end min-w-[220px] max-w-full">
         <iframe
           src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d228.09050966049878!2d-47.70638620940256!3d-23.838214875499713!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1spt-BR!2sbr!4v1759234763942!5m2!1spt-BR!2sbr"
           className="w-full h-[250px] md:h-[300px] rounded-lg"
@@ -32,6 +33,9 @@ const Footer = () => (
           referrerPolicy="no-referrer-when-downgrade"
           title="Localização RBS Cereais"
         ></iframe>
+        <div className="w-full text-center mt-2">
+          <span>Estrada da Lavrinha km2 - S/N - Pilar do Sul</span>
+        </div>
       </div>
     </div>
     <div className="flex items-end justify-between mt-6">
