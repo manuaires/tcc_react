@@ -1,5 +1,6 @@
 import Header from "../components/header/Header";
 import VarImg from "../assets/variedades.png";
+import VarMobImg from "../assets/variedadesmobile.png";
 import VarSection from "../components/layout/VarSection";
 import HeaderMobile from "../components/header/HeaderMobile.jsx"; // Crie este componente para mobile
 
@@ -8,7 +9,7 @@ export default function Var() {
   return (
     <>
       <div className="block md:hidden">
-            <HeaderMobile image={VarImg} />
+            <HeaderMobile image={VarMobImg} />
       </div>
       <div className="hidden md:block">
             <Header image={VarImg} />

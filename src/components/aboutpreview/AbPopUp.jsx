@@ -8,7 +8,7 @@ export default function AbPopUp({ open, onClose }) {
             <div className="bg-white p-8 rounded-lg max-w-md w-full shadow-xl text-center">
                 <h2 className="text-2xl font-bold text-gray-700 mb-4">Nossa História</h2>
                 <p className="text-gray-600 mb-6">
-                    Fundada em 2010, nossa empresa nasceu do sonho de oferecer produtos de qualidade e atendimento diferenciado. Ao longo dos anos, conquistamos a confiança de nossos clientes com dedicação, inovação e compromisso com a excelência.
+                    Fundada em 2022, nossa empresa nasceu do sonho de oferecer produtos de qualidade e atendimento diferenciado. Ao longo dos anos, conquistamos a confiança de nossos clientes com dedicação, inovação e compromisso com a excelência.
                 </p>
                 <button
                     onClick={onClose}

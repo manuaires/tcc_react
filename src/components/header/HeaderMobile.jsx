@@ -1,6 +1,6 @@
 export default function HeaderMobile({ image }) {
   return (
-    <div className="w-full overflow-hidden relative" style={{ height: '100vh' }}>
+    <div className="w-full overflow-hidden relative" style={{ height: '85vh' }}>
       <img
         src={image}
         alt="Header"

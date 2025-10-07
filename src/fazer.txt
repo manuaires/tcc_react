@@ -1,3 +1,7 @@
-fazer as imagens especificas para o header mobile mantendo o mesmo estilo (ondas e fotos e textos e fodasse)
-importante manter o estilo igual p nao ficar uma grande merda
-footer esta pronto mas ainda sujeito a mudancas
+add infos no footer (icons, redes sociais, etc.)
+img como funciona
+mudar texto botão cards
+api register
+pg view
+pg gerenciar produto
+pg vendedor (gardelli fez, só estilizar)

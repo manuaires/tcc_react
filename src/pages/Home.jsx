@@ -1,5 +1,6 @@
 import Header from "../components/header/Header";
 import HomeImg from "../assets/home.png";
+import HomeMobImg from "../assets/homemobile.png";
 import QualitiesSection from "../components/qualities/QualitiesSection.jsx";
 import PreviewSection from "../components/prodpreview/PreviewSection.jsx";
 import AbPrevSection from "../components/aboutpreview/AbPrevSection.jsx";
@@ -12,7 +13,7 @@ export default function Home() {
   return (
     <>
       <div className="block md:hidden">
-        <HeaderMobile image={HomeImg} />
+        <HeaderMobile image={HomeMobImg} />
       </div>
       <div className="hidden md:block">
         <Header image={HomeImg} />

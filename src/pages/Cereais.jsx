@@ -1,5 +1,6 @@
 import Header from "../components/header/Header";
 import CereaisImg from "../assets/cereais.png";
+import CereaisMobImg from "../assets/cereaismobile.png";
 import CerealSection from "../components/layout/CerealSection";
 import HeaderMobile from "../components/header/HeaderMobile.jsx"; // Crie este componente para mobile
 
@@ -7,7 +8,7 @@ export default function Cereais() {
   return (
     <>
       <div className="block md:hidden">
-        <HeaderMobile image={CereaisImg} />
+        <HeaderMobile image={CereaisMobImg} />
       </div>
       <div className="hidden md:block">
         <Header image={CereaisImg} />
