@@ -1,28 +1,9 @@
-import { useState, useEffect } from "react";
-import api from "../api";
+import { useState} from "react";
 import { Link } from "react-router-dom";
 import NavBar from "../components/navbar/NavBar";
 
 export default function Register() {
   const [formData, setFormData] = useState({}); // Inicializa como objeto vazio
-
-  useEffect(() => {
-    const fetchColumns = async () => {
-      try {
-        const response = await api.get("/clientes/columns");
-        const columns = response.data;
-        const initialData = {};
-        columns.forEach((col) => {
-          initialData[col] = "";
-        });
-        setFormData(initialData);
-      } catch (error) {
-        console.error("Erro ao buscar colunas:", error);
-      }
-    };
-
-    fetchColumns();
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

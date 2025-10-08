@@ -1,6 +1,6 @@
 add infos no footer (icons, redes sociais, etc.)
 img como funciona
-api register
+api register (nome, email, senha e telefone, cep, numero, complemento(pode ser nulo))
 pg view
 pg gerenciar produto
 pg vendedor (gardelli fez, só estilizar)
