@@ -48,7 +48,7 @@ export default function RacaoSection() {
         </div>
       </div>
 
-      <ProdSection produtos={produtosFiltrados} />
+      <ProdSection produtos={produtosFiltrados} categoria="ração"/>
     </section>
   );
 }

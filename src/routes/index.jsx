@@ -16,7 +16,7 @@ function AppRoutes() {
       <Route path="/racoes" element={<Rac />} />
       <Route path="/variedades" element={<Var />} />
       <Route path="/cereais" element={<Cereais />} />
-      <Route path="/view/:id" element={<View />} />
+      <Route path="/view/:categoria/:id" element={<View />} />
       <Route path="/admin" element={<GerenciarProdutos />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />

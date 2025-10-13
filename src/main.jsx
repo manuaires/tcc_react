@@ -21,7 +21,7 @@ const router = createBrowserRouter([
       { path: "/cereais", element: <Cereais /> },
       { path: "/racoes", element: <Rac /> },
       { path: "/variedades", element: <Var /> },
-      { path: "/view/:id", element: <View /> },
+      { path: "/view/:categoria/:id", element: <View /> },
       { path: "/admin", element: <GerenciarProdutos /> },
       {path: "/register", element: <Register /> },
       {path: "/login", element: <Login /> },

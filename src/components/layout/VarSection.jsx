@@ -47,7 +47,7 @@ export default function VarSection() {
         </div>
       </div>
 
-      <ProdSection produtos={produtosFiltrados} />
+      <ProdSection produtos={produtosFiltrados} categoria="variedade"/>
     </section>
   );
 }

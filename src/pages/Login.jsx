@@ -1,30 +1,16 @@
 import { useState, useEffect } from "react";
 import api from "../api";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import NavBar from "../components/navbar/NavBar";
 
 export default function Login() {
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate(); // Novo
 
   useEffect(() => {
-    const fetchColumns = async () => {
-      try {
-        const response = await api.get("/login/columns");
-        const columns = response.data;
-        const initialData = {};
-        columns.forEach((col) => {
-          initialData[col] = "";
-        });
-        setFormData(initialData);
-      } catch (error) {
-        // fallback para email/senha caso a API falhe
-        setFormData({ email: "", senha: "" });
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchColumns();
+    setFormData({ email: "", senha: "" });
+    setLoading(false);
   }, []);
 
   const handleChange = (e) => {
@@ -35,12 +21,10 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Envia para a API de login
       const response = await api.post("/login", formData);
-      // Trate o sucesso (ex: salvar token, redirecionar, etc)
       console.log("Login realizado:", response.data);
+      navigate("/"); // Redireciona
     } catch (error) {
-      // Trate o erro (ex: mostrar mensagem)
       alert("Erro ao fazer login. Verifique seus dados.");
     }
   };
@@ -95,7 +79,7 @@ export default function Login() {
             </button>
           </form>
           <p className="text-center text-sm text-gray-600 mt-4">
-            Não tem uma conta?{" "}
+            <span className="pe-1">Não tem uma conta?</span>
             <Link to="/register" className="text-green-600 hover:underline">
               Cadastre-se
             </Link>
