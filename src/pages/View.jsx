@@ -17,9 +17,9 @@ export default function View() {
     };
 
     fetchProduto();
-  }, [id]);
+  }, [id, categoria]);
 
-  console.log(produto)
+  console.log(produto);
 
   if (!produto) {
     return <p className="p-4">Carregando produto...</p>;

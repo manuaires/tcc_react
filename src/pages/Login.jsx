@@ -25,7 +25,7 @@ export default function Login() {
       console.log("Login realizado:", response.data);
       navigate("/"); // Redireciona
     } catch (error) {
-      alert("Erro ao fazer login. Verifique seus dados.");
+      alert(`Erro ao fazer login: ${error}. Verifique seus dados`);
     }
   };
 
@@ -51,15 +51,15 @@ export default function Login() {
             {Object.keys(formData).map((field) => (
               <div key={field}>
                 <label className="block text-gray-700 mb-1 capitalize">
-                  {field === "senha"
+                  {field == "senha"
                     ? "Senha"
                     : field.charAt(0).toUpperCase() + field.slice(1)}
                 </label>
                 <input
                   type={
-                    field === "senha"
+                    field == "senha"
                       ? "password"
-                      : field === "email"
+                      : field == "email"
                       ? "email"
                       : "text"
                   }
