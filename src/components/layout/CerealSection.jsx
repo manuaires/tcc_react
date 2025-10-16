@@ -44,7 +44,7 @@ export default function CerealSection() {
           />
         </div>
       </div>
-      <ProdSection produtos={produtosFiltrados} categoria="cereal"/>
+      <ProdSection produtos={produtosFiltrados} categoria="cereais" />
     </section>
   );
 }

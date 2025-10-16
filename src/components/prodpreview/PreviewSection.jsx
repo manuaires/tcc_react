@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import CardPrev from "./CardPrev.jsx";
+import CardPrev from "../layout/Card";
 import api from "../../api";
 
 export default function PreviewSection() {
@@ -86,6 +86,7 @@ export default function PreviewSection() {
                   id={item.Id}
                   nomeprod={item.Nome}
                   imagem={item.Foto}
+                  categoria={"cereais"}
                 />
               ))
           ) : produtosFiltrados.length > 0 ? (
@@ -97,6 +98,9 @@ export default function PreviewSection() {
                   id={item.Id}
                   nomeprod={item.Nome}
                   imagem={item.Foto}
+                  categoria={
+                    categoriaSelecionada === "Ração" ? "rações" : "variedades"
+                  }
                 />
               ))
           ) : (
