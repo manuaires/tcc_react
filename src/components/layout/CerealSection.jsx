@@ -21,6 +21,8 @@ export default function CerealSection() {
     fetchProdutos();
   }, []);
 
+  console.log(produtos);
+
   useEffect(() => {
     const filtered = produtos.filter((produto) =>
       produto.Nome.toLowerCase().includes(searchTerm.toLowerCase())
