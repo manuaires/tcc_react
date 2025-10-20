@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import api from "../api";
 import { Link, useNavigate } from "react-router-dom";
 import NavBar from "../components/navbar/NavBar";
+import { jwtDecode } from "jwt-decode"; // Importe jwt-decode
 
 export default function Login() {
   const [formData, setFormData] = useState({});
@@ -22,8 +23,17 @@ export default function Login() {
     e.preventDefault();
     try {
       const response = await api.post("/login", formData);
-      console.log("Login realizado:", response.data);
-      navigate("/"); // Redireciona
+      const decoded = jwtDecode(response.data.token); // Use jwtDecode em vez de jwt.verify
+      
+      // Salvar informações do usuário no localStorage
+      localStorage.setItem('userId', decoded.id);
+      localStorage.setItem('userName', decoded.nome);
+      localStorage.setItem('userType', decoded.tipo);
+      localStorage.setItem('token', response.data.token);
+
+       window.dispatchEvent(new Event("authChanged"));
+      
+      navigate("/");
     } catch (error) {
       alert(`Erro ao fazer login: ${error}. Verifique seus dados`);
     }
