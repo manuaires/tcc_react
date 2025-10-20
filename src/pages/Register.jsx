@@ -46,7 +46,7 @@ export default function Register() {
     <>
       <NavBar initialGreen={true} />
       <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-        <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
+        <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md mt-25">
           <h2 className="text-2xl font-bold text-center text-green-700 mb-6">
             Cadastro de Cliente
           </h2>

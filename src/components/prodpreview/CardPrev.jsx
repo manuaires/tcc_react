@@ -1,15 +1,6 @@
 import { useOutletContext } from "react-router-dom";
 
-export default function CardPrev({ id, nomeprod, imagem }) {
-  const { addToCart } = useOutletContext();
-
-  const handleAdd = () => {
-    addToCart({
-      id,
-      nomeprod,
-      imagem,
-    });
-  };
+export default function CardPrev() {
 
   return (
     <div className="bg-white rounded-sm p-3 w-52 h-auto sm:w-52 sm:h-64 md:w-64 md:h-80 flex flex-col items-center shadow-md hover:shadow-xl transition duration-300 hover:scale-105">

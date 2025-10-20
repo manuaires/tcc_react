@@ -59,7 +59,7 @@ export default function App() {
         updateQuantity={updateQuantity}
         clearCart={clearCart}
       />
-      <Outlet context={{ addToCart }} />
+      <Outlet context={{ addToCart, cartItems, onCartClick: () => setCartOpen(true) }} />
       <Footer />
      
     </>
