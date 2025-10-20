@@ -8,6 +8,7 @@ import View from "../pages/View.jsx";
 import GerenciarProdutos from "../admin/GerenciarProdutos.jsx";
 import Register from "../pages/Register.jsx";
 import Login from "../pages/Login.jsx";
+import Usuario from "../pages/Usuario.jsx";
 
 function AppRoutes() {
   return (
@@ -20,6 +21,7 @@ function AppRoutes() {
       <Route path="/admin" element={<GerenciarProdutos />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/usuario" element={<Usuario />} />
     </Routes>
   );
 }

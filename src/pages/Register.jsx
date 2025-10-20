@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import NavBar from "../components/navbar/NavBar";
 import api from "../api";
+import { jwtDecode } from "jwt-decode"; // Importe jwt-decode
+
 
 export default function Register() {
   const [formData, setFormData] = useState({}); // Inicializa como objeto
@@ -24,11 +26,39 @@ export default function Register() {
     setFormData({ ...formData, [name]: value });
   };
 
+  // Função login corrigida
+  const login = async (credentials) => {
+    try {
+      const payload = { email: credentials.email, senha: credentials.senha };
+      const response = await api.post("/login", payload);
+      const decoded = jwtDecode(response.data.token);
+
+      // Salvar informações do usuário no localStorage
+      localStorage.setItem("userId", decoded.id ?? decoded.userId ?? "");
+      localStorage.setItem("userName", decoded.nome ?? decoded.name ?? "");
+      localStorage.setItem("userType", decoded.tipo ?? decoded.type ?? "");
+      localStorage.setItem("token", response.data.token);
+
+      window.dispatchEvent(new Event("authChanged"));
+
+      return response;
+    } catch (err) {
+      console.error("Erro no login:", err);
+      throw err;
+    }
+ };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await api.post("/cadastro", formData);
-    console.log("Dados enviados:", response.data);
-    navigate("/"); // Redireciona
+    try {
+      await api.post("/cadastro", formData);
+      // chama login logo em seguida
+      await login(formData);
+      navigate("/");
+    } catch (err) {
+      console.error("Erro no cadastro ou login:", err);
+      // aqui você pode mostrar uma mensagem ao usuário
+    }
   };
 
   // Só renderiza o formulário se formData estiver pronto
