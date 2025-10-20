@@ -12,7 +12,7 @@ export default function CardProd({ id, nomeprod, imagem, categoria }) {
   };*/
 
   return (
-    <div className="bg-white rounded-sm p-3 w-52 h-auto sm:w-52 sm:h-64 md:w-64 md:h-80 flex flex-col items-center shadow-md hover:shadow-xl transition duration-300 hover:scale-105">
+    <div className="bg-white rounded-sm p-3 w-52 h-auto sm:w-52 sm:h-64 md:w-64 md:h-80 flex flex-col items-center shadow-xl hover:shadow-lg transition duration-300 hover:scale-105">
       <img
         src={`/produtos/${imagem}`}
         className="w-60 h-40 object-cover mb-2 rounded"

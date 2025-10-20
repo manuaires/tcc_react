@@ -30,7 +30,7 @@ export default function View() {
     <>
       <NavBar initialGreen={true} />
       <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-        <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
+        <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md mt-25">
           <h2 className="text-2xl font-bold text-center text-green-700 mb-6">
             {produto.Nome}
           </h2>
@@ -39,20 +39,18 @@ export default function View() {
             <img
               src={`/produtos/${produto.Foto}`}
               alt={produto.Nome}
-              className="w-full h-64 object-cover rounded-md mb-4"
+              className="w-full h-100 object-cover rounded-md mb-4 border-1 border-gray-300"
             />
           ) : (
             <p className="italic text-gray-500 mb-4">Sem imagem</p>
           )}
           <p>
-            <strong>Preço:</strong> R$ {Number(produto.Preco).toFixed(2)}
+            <strong>Entre em contato para consultar preços!</strong>
           </p>
-          <p>
-            <strong>Quantidade:</strong> {produto.Quantidade}
-          </p>
-          <p>
-            <strong>Categoria:</strong> {categoria}
-          </p>
+          <br></br>
+          <p>pesos</p>
+          {/*opções de pesagem*/}
+
           {produto.Peso_prod && (
             <p>
               <strong>Peso:</strong> {produto.Peso} Kg
@@ -63,6 +61,13 @@ export default function View() {
               <strong>Volume:</strong> {produto.Ml} ml
             </p>
           )}
+          <br></br>
+          <hr className="text-gray-300"></hr>
+          <br></br>
+          <p>
+            <strong>Descrição:</strong>
+          </p>
+          <p>pipipipopo Descição</p>
         </div>
       </div>
     </>
