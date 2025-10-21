@@ -1,4 +1,4 @@
-import variedades from "../../assets/variedades.png";
+import comofunciona from "../../assets/comofunciona.png"
 
 const steps = [
     {
@@ -28,7 +28,7 @@ export default function HowItWorks() {
         <section className="w-full bg-gray-100 py-16 px-4" >
             <div className="flex flex-col lg:flex-row items-center gap-10">
                 <div className="lg:w-1/2">
-                    <img src={variedades} alt="Variedades" className="w-full h-auto rounded-lg shadow-lg" />
+                    <img src={comofunciona} alt="Variedades" className="w-full h-auto rounded-lg shadow-lg" />
                 </div>
 
                 <div className="lg:w-1/2">

@@ -13,9 +13,18 @@ const Footer = () => (
       {/* Coluna Redes Sociais */}
       <div className="flex flex-col items-start gap-2 w-full sm:w-1/2 md:w-1/4 min-w-[180px] max-w-full md:max-w-xs">
         <h3 className="text-lg mt-4 font-semibold mb-2">Redes Sociais</h3>
-        <span>Twitter: @gordinhorosa</span>
-        <span>Facebook: facebook.com/josebezerra</span>
-        <span>Instagram: @blabla</span>
+        <a
+          href="https://instagram.com/rbs_cereais"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 text-gray-200 hover:text-white"
+          aria-label="Instagram RBS Cereais"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24" className="text-white">
+            <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/>
+          </svg>
+          <span className="font-medium">@rbs.cereais</span>
+        </a>
       </div>
      
       <div className="w-full sm:w-1/2 md:w-2/5 mt-6 md:mt-4 flex flex-col justify-center md:justify-end min-w-[220px] max-w-full">

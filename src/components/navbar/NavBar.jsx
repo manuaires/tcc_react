@@ -14,10 +14,12 @@ export default function NavBar({ initialGreen = false, onCartClick, cartItems = 
   const [menuOpen, setMenuOpen] = useState(false);
 
   // estado de autenticação local para forçar re-render quando mudar
-  const [auth, setAuth] = useState({
+  // inclui userType no estado inicial para que verificações (ex: Vendedor) funcionem no primeiro render
+  const [auth, setAuth] = useState(() => ({
     token: localStorage.getItem("token"),
     userName: localStorage.getItem("userName"),
-  });
+    userType: localStorage.getItem("userType"),
+  }));
 
   // novo estado/ref para dropdown do usuário
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -31,6 +33,8 @@ export default function NavBar({ initialGreen = false, onCartClick, cartItems = 
         userType: localStorage.getItem("userType"),
       });
     };
+    // sincroniza imediatamente no mount (evita suma do link ao atualizar)
+    handleAuthChange();
     // evento custom (disparado no mesmo tab) e storage (disparado em outras tabs)
     window.addEventListener("authChanged", handleAuthChange);
     window.addEventListener("storage", handleAuthChange);
@@ -46,6 +50,24 @@ export default function NavBar({ initialGreen = false, onCartClick, cartItems = 
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // efeito para fechar dropdown ao clicar fora / pressionar Esc
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (userDropdownRef.current && !userDropdownRef.current.contains(e.target)) {
+        setUserDropdownOpen(false);
+      }
+    };
+    const handleKey = (e) => {
+      if (e.key === "Escape") setUserDropdownOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKey);
+    };
   }, []);
 
   const logout = () => {
@@ -212,31 +234,7 @@ export default function NavBar({ initialGreen = false, onCartClick, cartItems = 
         }
       `}</style>
 
-      {/* efeito para fechar dropdown ao clicar fora / Esc */}
-      <script>{`/* placeholder to satisfy JSX syntax; real effects handled below */`}</script>
-
-      {/* efeitos para clicar fora / Esc */}
-      {/* não repetir markup acima: usar useEffect para adicionar listeners */}
-      {/* Adiciona listeners que fecham o dropdown ao clicar fora ou pressionar Esc */}
-      {(() => {
-        useEffect(() => {
-          const handleClickOutside = (e) => {
-            if (userDropdownRef.current && !userDropdownRef.current.contains(e.target)) {
-              setUserDropdownOpen(false);
-            }
-          };
-          const handleKey = (e) => {
-            if (e.key === "Escape") setUserDropdownOpen(false);
-          };
-          document.addEventListener("mousedown", handleClickOutside);
-          document.addEventListener("keydown", handleKey);
-          return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-            document.removeEventListener("keydown", handleKey);
-          };
-        }, []);
-        return null;
-      })()}
+      {/* efeitos para clicar fora / Esc movidos para useEffect no topo do componente */}
     </nav>
   );
 }
