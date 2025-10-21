@@ -110,7 +110,7 @@ export default function NavBar({ initialGreen = false, onCartClick, cartItems = 
         <Button link={"/racoes"} text={"Rações"} />
         <Button link={"/variedades"} text={"Variedades"} />
         {auth.userType === "Vendedor" && (
-          <Button link={"/"} text={"Orçamento"} />
+          <Button link={"/orcamento"} text={"Orçamento"} />
         )}
       </ul>
       

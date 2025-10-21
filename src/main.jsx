@@ -12,6 +12,7 @@ import GerenciarProdutos from "./admin/GerenciarProdutos.jsx";
 import Register from "./pages/Register.jsx";
 import Login from "./pages/Login.jsx";
 import Usuario from "./pages/Usuario.jsx";
+import Orcamento from "./pages/Orcamento.jsx";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,8 @@ const router = createBrowserRouter([
       {path: "/register", element: <Register /> },
       {path: "/login", element: <Login /> },
       {path: "/usuario", element: <Usuario /> },
+      {path: "/orcamento", element: <Orcamento /> },
+
     ],
   },
 ]);
