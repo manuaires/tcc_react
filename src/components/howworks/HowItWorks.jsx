@@ -14,7 +14,7 @@ const steps = [
     {
         number:  "03",
         title: "Confirme o pedido",
-        description: "Revise seu carrinho, confira os produtos, quantidades e valores. Complete seus dados e finalize a compra com segurança.",
+        description: "Revise seu carrinho, confira os produtos e as quantidades. E finalize a compra com segurança.",
     },
     {
         number:  "04",

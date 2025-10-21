@@ -5,9 +5,9 @@ const Footer = () => (
     <div className="max-w-8xl mx-auto flex flex-wrap flex-col md:flex-row justify-between items-stretch gap-2 md:gap-4 md:ml-12 md:mr-40">
       <div className="flex flex-col items-start gap-2 w-full sm:w-1/2 md:w-1/4 min-w-[180px] max-w-full md:max-w-xs">
         <h3 className="text-lg mt-4 font-semibold mb-2">Contato</h3>
-        <span>(15) 99846-6946</span>
-        <span>(15) 99747-4223</span>
-        <span>(15) 99629-4597</span>
+        <span>(15) 99846-6946 - Tiago</span>
+        <span>(15) 99629-4597 - Eduardo</span>
+        <span>(15) 99747-4223 - Financeiro</span>
         <span>rbscomerciocereais@gmail.com</span>
       </div>
       {/* Coluna Redes Sociais */}
