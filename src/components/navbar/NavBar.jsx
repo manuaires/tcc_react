@@ -117,17 +117,17 @@ export default function NavBar({ initialGreen = false, onCartClick, cartItems = 
               <span className="ml-1 text-sm"><IoIosArrowDown /></span>
             </button>
             {userDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-40 bg-[#044a23] text-white rounded shadow-lg z-30 overflow-hidden">
+              <div className="absolute right-0 mt-2 w-40 bg-[#044a23] text-white rounded shadow-[0_8px_25px_rgba(0,0,0,0.5)] z-30 overflow-hidden">
                 <Link
                   to="/usuario"
-                  className="block px-4 py-2 hover:bg-gray-100"
+                  className="block px-4 py-2 hover:bg-green-900"
                   onClick={() => setUserDropdownOpen(false)}
                 >
                   Editar
                 </Link>
                 <button
                   onClick={() => { setUserDropdownOpen(false); logout(); }}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                  className="w-full text-left px-4 py-2 hover:bg-green-900"
                 >
                   Logout
                 </button>
