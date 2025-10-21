@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api";
+import { FaSearch } from "react-icons/fa";
+import { IoTrash } from "react-icons/io5";
+import { IoMdRefresh } from "react-icons/io";
+import { IoSend } from "react-icons/io5";
+
 
 export default function OrderForm({ phone = "5515991782865" }) {
   const PRECO_MIN_FALLBACK = 15.0;
@@ -338,7 +343,7 @@ export default function OrderForm({ phone = "5515991782865" }) {
             }
             onBlur={() => setContatoTouched(true)}
             className="mt-1 block w-full rounded-md p-2 border border-gray-700"
-            placeholder="5515991386482"
+            placeholder="Ex: 5515990909090"
             maxLength={13}
             inputMode="numeric"
           />
@@ -376,11 +381,12 @@ export default function OrderForm({ phone = "5515991782865" }) {
                   alert("Erro ao buscar CEP");
                 }
               }}
-              className="px-3 rounded-md"
+              className="px-3 bg-green-600 hover:bg-green-700 text-white rounded-md flex items-center gap-2"
             >
+              <FaSearch />
               Buscar
             </button>
-          </div>
+          </div>  
         </div>
       </div>
 
@@ -465,7 +471,7 @@ export default function OrderForm({ phone = "5515991782865" }) {
                 onChange={(e) =>
                   onQuantidadeChange(r.id, Number(e.target.value || 1))
                 }
-                className="w-28 rounded-md p-2 border border-gray-700"
+                className="w-28 rounded-md p-2 border mb-4 border-gray-700"
               />
 
               <div className="w-40">
@@ -475,7 +481,7 @@ export default function OrderForm({ phone = "5515991782865" }) {
                   step="0.01"
                   value={r.precoUnit}
                   onChange={(e) => onPrecoUnitChange(r.id, e.target.value)}
-                  className="w-full rounded-md p-2 border border-gray-700"
+                  className="w-full rounded-md p-2 mb-4 border border-gray-700"
                   placeholder="Preço unit."
                 />
               </div>
@@ -484,8 +490,9 @@ export default function OrderForm({ phone = "5515991782865" }) {
                 <button
                   type="button"
                   onClick={() => removeRow(r.id)}
-                  className="px-3 py-1 rounded-md"
-                >
+                  className="px-3 py-2 mb-4 rounded-md bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
+                > 
+                  <IoTrash />
                   Remover
                 </button>
               </div>
@@ -497,7 +504,7 @@ export default function OrderForm({ phone = "5515991782865" }) {
           <button
             type="button"
             onClick={() => addRow()}
-            className="px-4 py-2 rounded-md bg-green-600 text-white"
+            className="px-4 py-2 rounded-md bg-green-600 hover:bg-green-700 text-white"
           >
             + Adicionar item
           </button>
@@ -523,19 +530,21 @@ export default function OrderForm({ phone = "5515991782865" }) {
             disabled={
               priceBelowMinExists() || noProducts || !validarContato(contato)
             }
-            className={`px-4 py-2 rounded-md text-white ${
+            className={`px-4 py-2 rounded-md text-white flex items-center gap-2 ${
               priceBelowMinExists() || noProducts || !validarContato(contato)
                 ? "bg-gray-400 cursor-not-allowed"
-                : "bg-indigo-600"
+                : "bg-green-700 hover:bg-green-800"
             }`}
           >
+            <IoSend />
             Enviar para WhatsApp
           </button>
           <button
             type="button"
             onClick={() => {}}
-            className="px-4 py-2 rounded-md border"
+            className="px-4 py-2 rounded-md border flex items-center gap-2 bg-slate-700 hover:bg-slate-800 text-white"
           >
+            <IoMdRefresh />
             Atualizar preview
           </button>
         </div>
