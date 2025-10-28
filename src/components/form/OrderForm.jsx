@@ -232,45 +232,47 @@ export default function OrderForm({ phone = "5515991782865" }) {
     }, 0);
   }
 
-  function montarMensagem() {
-    const header = [
-      "Novo Orçamento, vendedor",
-      `De: ${phone}@c.us`,
-      `Nome: ${nome || "[não informado]"}`,
-    ];
-
-    const lines = [...header, "Item:"];
-    let idx = 1;
-    rows.forEach((r) => {
-      if (!r.produtoNome) return;
-      const q = Number(r.quantidade || 1);
-      const precoUnit = parseFloat(r.precoUnit || 0);
-      const precoUnitText =
-        precoUnit > 0
-          ? `(${formatCurrency(precoUnit)})`
-          : "(preço uni não informado)";
-      lines.push(`${idx}. ${q} x ${r.produtoNome} ${precoUnitText}`);
-      idx++;
-    });
-
-    const total = calcularTotal();
-    lines.push(`Total: ${formatCurrency(total)}`);
-
-    // monta endereço num formato compacto como no exemplo
-    const enderecoMain = [rua, bairro, cidade].filter(Boolean).join(", ");
-    const parts = [];
-    if (enderecoMain) parts.push(enderecoMain);
-    if (cep) parts.push(`CEP: ${cep}`);
-    if (numero) parts.push(`Nº ${numero}`);
-    if (complemento) parts.push(`Compl.: ${complemento}`);
-
-    lines.push("---");
-    lines.push(`Endereço: ${parts.join(", ") || "[endereço não informado]"}`);
-    lines.push(`Entrega: ${ENTREGA_FIXED}`);
-    lines.push(`Pagamento: ${pagamento}`);
-
-    return lines.join("\n");
-  }
+  function montarMensagem(contatoParaMostrar = null) {
+  const contatoLimpo =
+    contatoParaMostrar ?? String(contato || "").replace(/\D/g, "");
+ 
+  const header = [
+    "Novo Orçamento, vendedor",
+    `De: ${contatoLimpo || phone}`, // mostra o contato do formulário; se vazio usa phone como fallback
+    `Nome: ${nome || "[não informado]"}`,
+  ];
+ 
+  const lines = [...header, "Item:"];
+  let idx = 1;
+  rows.forEach((r) => {
+    if (!r.produtoNome) return;
+    const q = Number(r.quantidade || 1);
+    const precoUnit = parseFloat(r.precoUnit || 0);
+    const precoUnitText =
+      precoUnit > 0
+        ? `(${formatCurrency(precoUnit)})`
+        : "(preço uni não informado)";
+    lines.push(`${idx}. ${q} x ${r.produtoNome} ${precoUnitText}`);
+    idx++;
+  });
+ 
+  const total = calcularTotal();
+  lines.push(`Total: ${formatCurrency(total)}`);
+ 
+  const enderecoMain = [rua, bairro, cidade].filter(Boolean).join(", ");
+  const parts = [];
+  if (enderecoMain) parts.push(enderecoMain);
+  if (cep) parts.push(`CEP: ${cep}`);
+  if (numero) parts.push(`Nº ${numero}`);
+  if (complemento) parts.push(`Compl.: ${complemento}`);
+ 
+  lines.push("---");
+  lines.push(`Endereço: ${parts.join(", ") || "[endereço não informado]"}`);
+  lines.push(`Entrega: ${ENTREGA_FIXED}`);
+  lines.push(`Pagamento: ${pagamento}`);
+ 
+  return lines.join("\n");
+}
 
   function validarContato(value) {
     if (!value) return false;
@@ -278,46 +280,54 @@ export default function OrderForm({ phone = "5515991782865" }) {
     return /^\d{13}$/.test(onlyDigits);
   }
 
-  async function enviarWhatsApp() {
-    if (noProducts) {
-      alert("Não é possível enviar: nenhum produto cadastrado.");
-      return;
-    }
-    if (!validarContato(contato)) {
-      alert(
-        "Contato inválido. Use exatamente 13 dígitos no formato 5515xxxxxxxxx"
-      );
-      return;
-    }
-    if (priceBelowMinExists()) {
-      alert("Existe item com preço abaixo do mínimo. Corrija.");
-      return;
-    }
-    const mensagem = montarMensagem();
-    try {
-      await api.post("/pedido", {
-        cliente: nome,
-        contato: contato,
-        endereco: { rua, numero, complemento, bairro, cidade, cep },
-        pagamento,
-        entrega: ENTREGA_FIXED,
-        itens: rows
-          .filter((r) => r.produtoNome)
-          .map((r) => ({
-            produtoId: r.produtoId,
-            produtoNome: r.produtoNome,
-            quantidade: Number(r.quantidade || 1),
-            precoUnitario: r.precoUnit ? Number(r.precoUnit) : null,
-          })),
-      });
-    } catch (err) {
-      console.warn("Falha ao salvar pedido", err);
-    }
-    window.open(
-      `https://wa.me/${phone}?text=${encodeURIComponent(mensagem)}`,
-      "_blank"
-    );
+async function enviarWhatsApp() {
+  if (noProducts) {
+    alert("Não é possível enviar: nenhum produto cadastrado.");
+    return;
   }
+ 
+  // limpa o contato do cliente (apenas dígitos)
+  const contatoLimpo = String(contato || "").replace(/\D/g, "");
+ 
+  if (!validarContato(contatoLimpo)) {
+    alert(
+      "Contato inválido. Use exatamente 13 dígitos no formato 5515xxxxxxxxx"
+    );
+    return;
+  }
+  if (priceBelowMinExists()) {
+    alert("Existe item com preço abaixo do mínimo. Corrija.");
+    return;
+  }
+ 
+  const mensagem = montarMensagem(contatoLimpo);
+ 
+  try {
+    await api.post("/pedido", {
+      cliente: nome,
+      contato: contatoLimpo, // envia o número limpo para a API
+      endereco: { rua, numero, complemento, bairro, cidade, cep },
+      pagamento,
+      entrega: ENTREGA_FIXED,
+      itens: rows
+        .filter((r) => r.produtoNome)
+        .map((r) => ({
+          produtoId: r.produtoId,
+          produtoNome: r.produtoNome,
+          quantidade: Number(r.quantidade || 1),
+          precoUnitario: r.precoUnit ? Number(r.precoUnit) : null,
+        })),
+    });
+  } catch (err) {
+    console.warn("Falha ao salvar pedido", err);
+  }
+ 
+  // abre o wa.me do BOT (phone) — mantemos phone como destino
+  window.open(
+    `https://wa.me/${phone}?text=${encodeURIComponent(mensagem)}`,
+    "_blank"
+  );
+}
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-2xl shadow-md">
