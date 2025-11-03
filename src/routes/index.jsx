@@ -1,8 +1,8 @@
 import { Routes, Route } from "react-router-dom";
-import Home from "../pages/Home";
-import Cereais from "../pages/Cereais";
-import Rac from "../pages/Rações";
-import Var from "../pages/Variedades";
+import Home from "../pages/Home.jsx";
+import Cereais from "../pages/Cereais.jsx";
+import Rac from "../pages/Rações.jsx";
+import Var from "../pages/Variedades.jsx";
 import "leaflet/dist/leaflet.css";
 import View from "../pages/View.jsx";
 import GerenciarProdutos from "../admin/GerenciarProdutos.jsx";

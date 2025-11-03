@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import logo from "../../assets/logo.svg";
 import logosimp from "../../assets/logosimp.svg";
@@ -10,6 +10,7 @@ import ButtonLog from "./ButtonLog.jsx";
 import { IoIosArrowDown } from "react-icons/io";
 
 export default function NavBar({ initialGreen = false, onCartClick, cartItems = []  }) { 
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -78,6 +79,7 @@ export default function NavBar({ initialGreen = false, onCartClick, cartItems = 
     setAuth({ token: null, userName: null, userType: null });
     // avisa o NavBar (no mesmo tab) e outras tabs (storage)
     window.dispatchEvent(new Event("authChanged"));
+    navigate("/");
   };
 
   const bgClass =
@@ -145,7 +147,7 @@ export default function NavBar({ initialGreen = false, onCartClick, cartItems = 
                   className="block px-4 py-2 hover:bg-green-900"
                   onClick={() => setUserDropdownOpen(false)}
                 >
-                  Editar
+                  Editar Perfil
                 </Link>
                 <button
                   onClick={() => { setUserDropdownOpen(false); logout(); }}

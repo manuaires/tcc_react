@@ -69,7 +69,7 @@ export default function View() {
                 <img
                   src={`/produtos/${produto.Foto}`}
                   alt={produto.Nome}
-                  className="object-contain max-w-full w-auto max-h-64 md:max-h-[480px]"
+                  className="object-cover w-full h-auto max-h-[480px] rounded" // Ajustar para ser responsiva
                 />
               </div>
             ) : (

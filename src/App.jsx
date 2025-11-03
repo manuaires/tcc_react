@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import ScrollToTop from "./components/ScrollToTop"; // adicione esta linha
 import NavBar from "./components/navbar/NavBar.jsx";
 import SidebarCart from "./components/cart/SidebarCart.jsx";
 import { Outlet } from "react-router-dom";
@@ -47,6 +48,7 @@ export default function App() {
 
   return (
     <>
+      <ScrollToTop />
       <NavBar
         onCartClick={() => setCartOpen(true)}
         cartItems={cartItems}
@@ -61,7 +63,7 @@ export default function App() {
       />
       <Outlet context={{ addToCart, cartItems, onCartClick: () => setCartOpen(true) }} />
       <Footer />
-     
+
     </>
   );
 }
