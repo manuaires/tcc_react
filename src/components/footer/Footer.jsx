@@ -4,15 +4,17 @@ const Footer = () => (
   <footer className="bg-[#02381b] text-gray-200 py-4 px-4 mt-2 relative">
     <div className="max-w-8xl mx-auto flex flex-wrap flex-col md:flex-row justify-between items-stretch gap-2 md:gap-4 md:ml-12 md:mr-40">
       <div className="flex flex-col items-start gap-2 w-full sm:w-1/2 md:w-1/4 min-w-[180px] max-w-full md:max-w-xs">
-        <h3 className="text-lg mt-4 font-semibold mb-2">Contato</h3>
+        <h3 className="text-lg mt-4 font-semibold mb-2">Para mais informações</h3>
         <span>(15) 99846-6946 - Tiago</span>
         <span>(15) 99629-4597 - Eduardo</span>
         <span>(15) 99747-4223 - Financeiro</span>
-        <span>rbscomerciocereais@gmail.com</span>
       </div>
       {/* Coluna Redes Sociais */}
       <div className="flex flex-col items-start gap-2 w-full sm:w-1/2 md:w-1/4 min-w-[180px] max-w-full md:max-w-xs">
-        <h3 className="text-lg mt-4 font-semibold mb-2">Redes Sociais</h3>
+        <h3 className="text-lg mt-4 font-semibold mb-2">Contatos</h3>
+          <span className="font-medium">tiago@rbscereais.com.br</span>
+          <span className="font-medium">eduardo@rbscereais.com.br</span>
+          <span className="font-medium">financeiro@rbscereais.com.br</span>
         <a
           href="https://instagram.com/rbs_cereais"
           target="_blank"

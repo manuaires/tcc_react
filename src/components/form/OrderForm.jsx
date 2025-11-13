@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../api";
 import { FaSearch } from "react-icons/fa";
 import { IoTrash } from "react-icons/io5";
@@ -9,6 +10,22 @@ import { IoSend } from "react-icons/io5";
 export default function OrderForm({ phone = "5515991782865" }) {
   const PRECO_MIN_FALLBACK = 15.0;
   const ENTREGA_FIXED = "Fretado";
+
+  const navigate = useNavigate();
+ 
+
+  // Verificação de token no topo da página
+  useEffect(() => {
+  try {
+  const token = localStorage.getItem("token");
+  if (token !== "vendedor") {
+  navigate("/");
+  }
+  } catch (e) {
+  // Em caso de erro ao acessar localStorage, redireciona igualmente
+  navigate("/");
+  }
+  }, [navigate]);
 
   const [nome, setNome] = useState("");
   const [contato, setContato] = useState("");
