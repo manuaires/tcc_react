@@ -6,25 +6,191 @@ import { IoTrash } from "react-icons/io5";
 import { IoMdRefresh } from "react-icons/io";
 import { IoSend } from "react-icons/io5";
 
-
 export default function OrderForm({ phone = "5515991782865" }) {
   const PRECO_MIN_FALLBACK = 15.0;
   const ENTREGA_FIXED = "Fretado";
 
   const navigate = useNavigate();
- 
 
-  // Verificação de token no topo da página
   useEffect(() => {
-  try {
-  const token = localStorage.getItem("token");
-  if (token !== "vendedor") {
-  navigate("/");
-  }
-  } catch (e) {
-  // Em caso de erro ao acessar localStorage, redireciona igualmente
-  navigate("/");
-  }
+    const KEYS_TO_CHECK = [
+      "token",
+      "auth",
+      "user",
+      "authorization",
+      "access_token",
+      "accessToken",
+      "jwt",
+    ];
+
+    const safeParse = (s) => {
+      try {
+        return JSON.parse(s);
+      } catch {
+        return null;
+      }
+    };
+
+    const findTokenStringInValue = (val) => {
+      if (!val) return null;
+      if (typeof val === "string") return val;
+      if (typeof val === "object") {
+        // procura propriedades comuns
+        const candidates = [
+          "token",
+          "accessToken",
+          "access_token",
+          "authorization",
+          "jwt",
+          "idToken",
+        ];
+        for (const k of candidates) {
+          if (val[k]) return val[k];
+        }
+        // se for objeto com campo nested.token por exemplo
+        for (const k of Object.keys(val)) {
+          const v = val[k];
+          if (typeof v === "string" && v.split(".").length === 3) return v;
+        }
+      }
+      return null;
+    };
+
+    const getStoredToken = () => {
+      // checa chaves padrão
+      for (const k of KEYS_TO_CHECK) {
+        const raw = localStorage.getItem(k);
+        if (!raw) continue;
+        // se for JSON com token dentro
+        const parsed = safeParse(raw);
+        const tokenFromParsed = findTokenStringInValue(parsed);
+        if (tokenFromParsed) return tokenFromParsed;
+        // se for string simples
+        const tokenFromString = findTokenStringInValue(raw);
+        if (tokenFromString) return tokenFromString;
+      }
+
+      // heurística: procurar em 'localStorage' por qualquer valor que pareça JWT
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (KEYS_TO_CHECK.includes(key)) continue;
+        const val = localStorage.getItem(key);
+        if (!val) continue;
+        // tenta parse e extrair token
+        const parsed = safeParse(val);
+        const t1 = findTokenStringInValue(parsed);
+        if (t1) return t1;
+        if (typeof val === "string" && val.split(".").length === 3) return val;
+      }
+
+      return null;
+    };
+
+    const decodeJwtPayload = (token) => {
+      try {
+        if (!token || typeof token !== "string") return null;
+        const raw = token.trim().replace(/^Bearer\s+/i, "");
+        if (raw.split(".").length !== 3) return null;
+        const payloadB64 = raw.split(".")[1];
+        const b64 = payloadB64.replace(/-/g, "+").replace(/_/g, "/");
+        const padded = b64 + "=".repeat((4 - (b64.length % 4)) % 4);
+        const json = atob(padded);
+        return JSON.parse(json);
+      } catch (e) {
+        console.warn("decodeJwtPayload falhou:", e);
+        return null;
+      }
+    };
+
+    const roleLooksLikeVendedor = (rawRole) => {
+      if (rawRole === undefined || rawRole === null) return false;
+      const s = String(rawRole).trim().toLowerCase();
+      if (!s) return false;
+      if (s === "vendedor") return true;
+      if (s.includes("vend")) return true; // cobre variantes como 'venda', 'vendedor', etc.
+      // se for número e você usa códigos (ex: 2 = vendedor), adicione checks aqui:
+      // if (Number(rawRole) === 2) return true;
+      return false;
+    };
+
+    const check = () => {
+      try {
+        const token = getStoredToken();
+
+        if (!token) {
+          console.warn(
+            "Nenhum token encontrado no localStorage (checadas várias chaves)."
+          );
+          navigate("/");
+          return;
+        }
+
+        const payload = decodeJwtPayload(token);
+        if (payload) {
+          // aceita campos diferentes que possam conter o tipo
+          const roleCandidates = [
+            payload.tipo,
+            payload.type,
+            payload.role,
+            payload.userType,
+            payload.Tipo_pes,
+          ];
+          for (const cand of roleCandidates) {
+            if (roleLooksLikeVendedor(cand)) return; // autorizado
+          }
+
+          // verifica exp (se existir)
+          if (payload.exp && Number(payload.exp) < Date.now() / 1000) {
+            console.warn("Token encontrado, mas expirado.");
+            navigate("/");
+            return;
+          }
+
+          // se chegou aqui e não encontrou role => não autorizado
+          console.warn(
+            "Payload JWT encontrado, mas role/tipo não indica vendedor:",
+            payload
+          );
+          navigate("/");
+          return;
+        }
+
+        // se não for JWT, tenta interpretar token como JSON string contendo tipo
+        const parsed = safeParse(token);
+        if (parsed) {
+          const cand =
+            parsed.tipo ?? parsed.type ?? parsed.role ?? parsed.userType;
+          if (roleLooksLikeVendedor(cand)) return;
+        }
+
+        // por fim, aceita string simples "vendedor"
+        if (roleLooksLikeVendedor(String(token).replace(/(^"|"$)/g, "")))
+          return;
+
+        // default: não autorizado
+        console.warn(
+          "Token presente mas não autorizado. token preview:",
+          String(token).slice(0, 80)
+        );
+        navigate("/");
+      } catch (err) {
+        console.error("Erro ao checar token:", err);
+        navigate("/");
+      }
+    };
+
+    check();
+
+    const onStorage = (e) => {
+      if (
+        e.key &&
+        (e.key === "token" || e.key === "auth" || e.key === "user")
+      ) {
+        check();
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, [navigate]);
 
   const [nome, setNome] = useState("");
@@ -96,20 +262,21 @@ export default function OrderForm({ phone = "5515991782865" }) {
   useEffect(() => {
     if (rows.length === 0) addRow();
 
-    (async function init() {
+    (async () => {
       try {
-        const [resCereais, resOutros] = await Promise.all([
-          api.get("/ensacados").catch(() => ({ data: [] })),
-          api.get("/produtos").catch(() => ({ data: [] })),
+        const [listC, listO] = await Promise.all([
+          api
+            .get("/ensacados")
+            .then((r) => r.data)
+            .catch(() => []),
+          api
+            .get("/produtos")
+            .then((r) => r.data)
+            .catch(() => []),
         ]);
 
-        const listC = Array.isArray(resCereais.data) ? resCereais.data : [];
-        const listO = Array.isArray(resOutros.data) ? resOutros.data : [];
-
-        const normalize = (it, table) => {
+        const norm = (it, table) => {
           const rawId = it.Id ?? it.Id_ens ?? it.Id_out ?? it.id ?? "";
-          const id = `${table}_${String(rawId)}`;
-
           const nome =
             it.Nome ||
             it.Nome_ens ||
@@ -117,7 +284,6 @@ export default function OrderForm({ phone = "5515991782865" }) {
             it.descricao ||
             it.Nome_produto ||
             "";
-
           const maybe = parseToNumber(
             it.Preco ??
               it.Preco_ens ??
@@ -126,14 +292,13 @@ export default function OrderForm({ phone = "5515991782865" }) {
               it.Preco_outro
           );
           const fallback = maybe && maybe > 0 ? maybe : findPriceInObject(it);
-
           const precoBase = fallback && fallback > 0 ? fallback : null;
           const precoMin = precoBase
             ? calcPrecoMinFromBase(precoBase)
             : PRECO_MIN_FALLBACK;
 
           return {
-            id,
+            id: `${table}_${String(rawId)}`,
             origId: String(rawId || ""),
             table,
             nome: String(nome || "").trim(),
@@ -150,16 +315,16 @@ export default function OrderForm({ phone = "5515991782865" }) {
           };
         };
 
-        const normalized = [
-          ...listC.map((it) => normalize(it, "ens")),
-          ...listO.map((it) => normalize(it, "out")),
-        ];
-        setProdutosGlobais(normalized);
+        setProdutosGlobais([
+          ...(Array.isArray(listC) ? listC : []).map((it) => norm(it, "ens")),
+          ...(Array.isArray(listO) ? listO : []).map((it) => norm(it, "out")),
+        ]);
       } catch (err) {
         console.warn("Erro ao carregar produtos", err);
         setProdutosGlobais([]);
       }
     })();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -250,46 +415,46 @@ export default function OrderForm({ phone = "5515991782865" }) {
   }
 
   function montarMensagem(contatoParaMostrar = null) {
-  const contatoLimpo =
-    contatoParaMostrar ?? String(contato || "").replace(/\D/g, "");
- 
-  const header = [
-    "Novo Orçamento, vendedor",
-    `De: ${contatoLimpo || phone}`, // mostra o contato do formulário; se vazio usa phone como fallback
-    `Nome: ${nome || "[não informado]"}`,
-  ];
- 
-  const lines = [...header, "Item:"];
-  let idx = 1;
-  rows.forEach((r) => {
-    if (!r.produtoNome) return;
-    const q = Number(r.quantidade || 1);
-    const precoUnit = parseFloat(r.precoUnit || 0);
-    const precoUnitText =
-      precoUnit > 0
-        ? `(${formatCurrency(precoUnit)})`
-        : "(preço uni não informado)";
-    lines.push(`${idx}. ${q} x ${r.produtoNome} ${precoUnitText}`);
-    idx++;
-  });
- 
-  const total = calcularTotal();
-  lines.push(`Total: ${formatCurrency(total)}`);
- 
-  const enderecoMain = [rua, bairro, cidade].filter(Boolean).join(", ");
-  const parts = [];
-  if (enderecoMain) parts.push(enderecoMain);
-  if (cep) parts.push(`CEP: ${cep}`);
-  if (numero) parts.push(`Nº ${numero}`);
-  if (complemento) parts.push(`Compl.: ${complemento}`);
- 
-  lines.push("---");
-  lines.push(`Endereço: ${parts.join(", ") || "[endereço não informado]"}`);
-  lines.push(`Entrega: ${ENTREGA_FIXED}`);
-  lines.push(`Pagamento: ${pagamento}`);
- 
-  return lines.join("\n");
-}
+    const contatoLimpo =
+      contatoParaMostrar ?? String(contato || "").replace(/\D/g, "");
+
+    const header = [
+      "Novo Orçamento, vendedor",
+      `De: ${contatoLimpo || phone}`, // mostra o contato do formulário; se vazio usa phone como fallback
+      `Nome: ${nome || "[não informado]"}`,
+    ];
+
+    const lines = [...header, "Item:"];
+    let idx = 1;
+    rows.forEach((r) => {
+      if (!r.produtoNome) return;
+      const q = Number(r.quantidade || 1);
+      const precoUnit = parseFloat(r.precoUnit || 0);
+      const precoUnitText =
+        precoUnit > 0
+          ? `(${formatCurrency(precoUnit)})`
+          : "(preço uni não informado)";
+      lines.push(`${idx}. ${q} x ${r.produtoNome} ${precoUnitText}`);
+      idx++;
+    });
+
+    const total = calcularTotal();
+    lines.push(`Total: ${formatCurrency(total)}`);
+
+    const enderecoMain = [rua, bairro, cidade].filter(Boolean).join(", ");
+    const parts = [];
+    if (enderecoMain) parts.push(enderecoMain);
+    if (cep) parts.push(`CEP: ${cep}`);
+    if (numero) parts.push(`Nº ${numero}`);
+    if (complemento) parts.push(`Compl.: ${complemento}`);
+
+    lines.push("---");
+    lines.push(`Endereço: ${parts.join(", ") || "[endereço não informado]"}`);
+    lines.push(`Entrega: ${ENTREGA_FIXED}`);
+    lines.push(`Pagamento: ${pagamento}`);
+
+    return lines.join("\n");
+  }
 
   function validarContato(value) {
     if (!value) return false;
@@ -297,54 +462,54 @@ export default function OrderForm({ phone = "5515991782865" }) {
     return /^\d{13}$/.test(onlyDigits);
   }
 
-async function enviarWhatsApp() {
-  if (noProducts) {
-    alert("Não é possível enviar: nenhum produto cadastrado.");
-    return;
-  }
- 
-  // limpa o contato do cliente (apenas dígitos)
-  const contatoLimpo = String(contato || "").replace(/\D/g, "");
- 
-  if (!validarContato(contatoLimpo)) {
-    alert(
-      "Contato inválido. Use exatamente 13 dígitos no formato 5515xxxxxxxxx"
+  async function enviarWhatsApp() {
+    if (noProducts) {
+      alert("Não é possível enviar: nenhum produto cadastrado.");
+      return;
+    }
+
+    // limpa o contato do cliente (apenas dígitos)
+    const contatoLimpo = String(contato || "").replace(/\D/g, "");
+
+    if (!validarContato(contatoLimpo)) {
+      alert(
+        "Contato inválido. Use exatamente 13 dígitos no formato 5515xxxxxxxxx"
+      );
+      return;
+    }
+    if (priceBelowMinExists()) {
+      alert("Existe item com preço abaixo do mínimo. Corrija.");
+      return;
+    }
+
+    const mensagem = montarMensagem(contatoLimpo);
+
+    try {
+      await api.post("/pedido", {
+        cliente: nome,
+        contato: contatoLimpo, // envia o número limpo para a API
+        endereco: { rua, numero, complemento, bairro, cidade, cep },
+        pagamento,
+        entrega: ENTREGA_FIXED,
+        itens: rows
+          .filter((r) => r.produtoNome)
+          .map((r) => ({
+            produtoId: r.produtoId,
+            produtoNome: r.produtoNome,
+            quantidade: Number(r.quantidade || 1),
+            precoUnitario: r.precoUnit ? Number(r.precoUnit) : null,
+          })),
+      });
+    } catch (err) {
+      console.warn("Falha ao salvar pedido", err);
+    }
+
+    // abre o wa.me do BOT (phone) — mantemos phone como destino
+    window.open(
+      `https://wa.me/${phone}?text=${encodeURIComponent(mensagem)}`,
+      "_blank"
     );
-    return;
   }
-  if (priceBelowMinExists()) {
-    alert("Existe item com preço abaixo do mínimo. Corrija.");
-    return;
-  }
- 
-  const mensagem = montarMensagem(contatoLimpo);
- 
-  try {
-    await api.post("/pedido", {
-      cliente: nome,
-      contato: contatoLimpo, // envia o número limpo para a API
-      endereco: { rua, numero, complemento, bairro, cidade, cep },
-      pagamento,
-      entrega: ENTREGA_FIXED,
-      itens: rows
-        .filter((r) => r.produtoNome)
-        .map((r) => ({
-          produtoId: r.produtoId,
-          produtoNome: r.produtoNome,
-          quantidade: Number(r.quantidade || 1),
-          precoUnitario: r.precoUnit ? Number(r.precoUnit) : null,
-        })),
-    });
-  } catch (err) {
-    console.warn("Falha ao salvar pedido", err);
-  }
- 
-  // abre o wa.me do BOT (phone) — mantemos phone como destino
-  window.open(
-    `https://wa.me/${phone}?text=${encodeURIComponent(mensagem)}`,
-    "_blank"
-  );
-}
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-2xl shadow-md">
@@ -413,7 +578,7 @@ async function enviarWhatsApp() {
               <FaSearch />
               Buscar
             </button>
-          </div>  
+          </div>
         </div>
       </div>
 
@@ -518,7 +683,7 @@ async function enviarWhatsApp() {
                   type="button"
                   onClick={() => removeRow(r.id)}
                   className="px-3 py-2 mb-4 rounded-md bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
-                > 
+                >
                   <IoTrash />
                   Remover
                 </button>
