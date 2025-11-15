@@ -158,7 +158,7 @@ export default function Register() {
 
             {/* SENHA COM CHECKLIST EM TEMPO REAL */}
             <div>
-              <label className="block text-gray-700 mb-1">Senha (forte)</label>
+              <label className="block text-gray-700 mb-1">Senha</label>
 
               <input
                 type="password"
