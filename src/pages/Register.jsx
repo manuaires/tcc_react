@@ -156,7 +156,6 @@ export default function Register() {
               />
             </div>
 
-            {/* SENHA COM CHECKLIST EM TEMPO REAL */}
             <div>
               <label className="block text-gray-700 mb-1">Senha</label>
 
@@ -182,7 +181,6 @@ export default function Register() {
                   </p>
 
                   <ul className="space-y-2">
-                    {/* MAIÚSCULA */}
                     <li className="flex items-center gap-2">
                       <span
                         className={
@@ -200,7 +198,6 @@ export default function Register() {
                       </span>
                     </li>
 
-                    {/* MINÚSCULA */}
                     <li className="flex items-center gap-2">
                       <span
                         className={
@@ -218,7 +215,6 @@ export default function Register() {
                       </span>
                     </li>
 
-                    {/* MÍNIMO 8 CARACTERES */}
                     <li className="flex items-center gap-2">
                       <span
                         className={
@@ -240,7 +236,6 @@ export default function Register() {
               )}
             </div>
 
-            {/* TELEFONE */}
             <div>
               <label className="block text-gray-700 mb-1">Telefone</label>
 
