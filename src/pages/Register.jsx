@@ -3,31 +3,31 @@ import { Link, useNavigate } from "react-router-dom";
 import NavBar from "../components/navbar/NavBar";
 import api from "../api";
 import { jwtDecode } from "jwt-decode";
-
-const COUNTRY_CODES = [
-  { code: "+55", label: "+55 (Brasil)" },
-  { code: "+1", label: "+1 (EUA/Canadá)" },
-  { code: "+44", label: "+44 (Reino Unido)" },
-  { code: "+34", label: "+34 (Espanha)" },
-  { code: "+49", label: "+49 (Alemanha)" },
-  { code: "+52", label: "+52 (México)" },
-  { code: "+39", label: "+39 (Itália)" },
-  { code: "+33", label: "+33 (França)" },
-  // adicione mais se quiser
-];
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 export default function Register() {
   const [formData, setFormData] = useState({});
   const [error, setError] = useState("");
+  const [pwdChecks, setPwdChecks] = useState({
+    upper: false,
+    lower: false,
+    minLen: false,
+  });
+  const [pwdFocused, setPwdFocused] = useState(false);
   const navigate = useNavigate();
+
+  // REGEX DE SENHA FORTE (usado no handleSubmit também)
+  const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
 
   useEffect(() => {
     setFormData({
       nome: "",
       email: "",
       senha: "",
-      telefone: "", // deve conter apenas DDD + número (11 dígitos)
-      paisCodigo: "+55", // código do país selecionado (não conta nos 11 dígitos)
+      telefone: "", // somente DDD + número (11 dígitos)
+      telefoneFull: "", // usado internamente para armazenar string completa
+      paisCodigo: "+55", // "+55" mas agora será gerado automaticamente
       cep: "",
       numero: "",
       complemento: "",
@@ -36,13 +36,19 @@ export default function Register() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // garantir que telefone só receba dígitos
-    if (name === "telefone") {
-      const digits = value.replace(/\D/g, "");
-      setFormData({ ...formData, [name]: digits });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // handle específico para senha (atualiza formData e checks em tempo real)
+  const handlePasswordChange = (e) => {
+    const value = e.target.value;
+    setFormData((prev) => ({ ...prev, senha: value }));
+
+    setPwdChecks({
+      upper: /[A-Z]/.test(value),
+      lower: /[a-z]/.test(value),
+      minLen: value.length >= 8,
+    });
   };
 
   const login = async (credentials) => {
@@ -69,44 +75,52 @@ export default function Register() {
     e.preventDefault();
     setError("");
 
-    if (!formData.telefone) {
-      setError("Informe o telefone (11 dígitos, incluindo DDD)");
+    // VALIDAR SENHA FORTE (reconfirmação)
+    if (!strongPasswordRegex.test(formData.senha)) {
+      setError(
+        "A senha precisa ter no mínimo 8 caracteres, incluindo pelo menos 1 letra maiúscula e 1 letra minúscula."
+      );
       return;
     }
 
-    if (formData.telefone.length !== 11) {
-      setError("O telefone deve ter exatamente 11 dígitos (DDD + número).");
+    // VALIDAR TELEFONE COM 11 DÍGITOS
+    if (!formData.telefone || formData.telefone.length !== 11) {
+      setError("Informe um telefone válido com 11 dígitos (DDD + número).");
       return;
     }
 
     try {
-      // Construir payload: concatenar código do país + telefone
       const payload = { ...formData };
-      // Remove o "+" do código do país para compatibilidade com o banco
+
+      // Remove o "+" e concatena com o número
       const codigoPaisSemSinal = payload.paisCodigo.replace("+", "");
       payload.telefone = `${codigoPaisSemSinal}${payload.telefone}`;
-      // opcional: remover paisCodigo do payload se não quiser gravar separadamente
+
       delete payload.paisCodigo;
+      delete payload.telefoneFull;
 
       await api.post("/cadastro", payload);
-      // chama login logo em seguida (usa email + senha originais)
       await login(formData);
       navigate("/");
     } catch (err) {
-      console.error("Erro no cadastro ou login:", err);
+      console.error("Erro no cadastro:", err);
       setError("Erro no cadastro. Verifique os dados e tente novamente.");
     }
   };
 
   if (!formData || Object.keys(formData).length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center  bg-gray-100 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
         <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md text-center">
           Carregando...
         </div>
       </div>
     );
   }
+
+  // controle de exibição do checklist: mostra se está focado ou já há caracteres
+  const showPwdChecklist =
+    pwdFocused || (formData.senha && formData.senha.length > 0);
 
   return (
     <>
@@ -142,55 +156,117 @@ export default function Register() {
               />
             </div>
 
+            {/* SENHA COM CHECKLIST EM TEMPO REAL */}
             <div>
-              <label className="block text-gray-700 mb-1">Senha</label>
+              <label className="block text-gray-700 mb-1">Senha (forte)</label>
+
               <input
                 type="password"
                 name="senha"
                 value={formData.senha}
-                onChange={handleChange}
+                onChange={handlePasswordChange}
+                onFocus={() => setPwdFocused(true)}
+                onBlur={() => setPwdFocused(false)}
                 required
+                minLength={8}
+                pattern="^(?=.*[a-z])(?=.*[A-Z]).{8,}$"
+                title="A senha deve ter no mínimo 8 caracteres, incluindo pelo menos 1 letra maiúscula e 1 letra minúscula."
+                placeholder="Crie uma senha forte..."
                 className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-400 outline-none"
               />
+
+              {showPwdChecklist && (
+                <div className="mt-3 p-3 border rounded-lg bg-gray-50">
+                  <p className="text-sm text-gray-600 mb-2">
+                    A senha deve conter:
+                  </p>
+
+                  <ul className="space-y-2">
+                    {/* MAIÚSCULA */}
+                    <li className="flex items-center gap-2">
+                      <span
+                        className={
+                          pwdChecks.upper ? "text-green-600" : "text-red-600"
+                        }
+                      >
+                        {pwdChecks.upper ? "✅" : "❌"}
+                      </span>
+                      <span
+                        className={
+                          pwdChecks.upper ? "text-green-700" : "text-red-600"
+                        }
+                      >
+                        1 letra maiúscula
+                      </span>
+                    </li>
+
+                    {/* MINÚSCULA */}
+                    <li className="flex items-center gap-2">
+                      <span
+                        className={
+                          pwdChecks.lower ? "text-green-600" : "text-red-600"
+                        }
+                      >
+                        {pwdChecks.lower ? "✅" : "❌"}
+                      </span>
+                      <span
+                        className={
+                          pwdChecks.lower ? "text-green-700" : "text-red-600"
+                        }
+                      >
+                        1 letra minúscula
+                      </span>
+                    </li>
+
+                    {/* MÍNIMO 8 CARACTERES */}
+                    <li className="flex items-center gap-2">
+                      <span
+                        className={
+                          pwdChecks.minLen ? "text-green-600" : "text-red-600"
+                        }
+                      >
+                        {pwdChecks.minLen ? "✅" : "❌"}
+                      </span>
+                      <span
+                        className={
+                          pwdChecks.minLen ? "text-green-700" : "text-red-600"
+                        }
+                      >
+                        Mínimo 8 caracteres
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+              )}
             </div>
 
-            {/* Campo de telefone com dropdown do código do país */}
+            {/* TELEFONE */}
             <div>
               <label className="block text-gray-700 mb-1">Telefone</label>
-              <div className="flex gap-2">
-                <select
-                  name="paisCodigo"
-                  value={formData.paisCodigo}
-                  onChange={handleChange}
-                  className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-400 outline-none"
-                >
-                  {COUNTRY_CODES.map((c) => (
-                    <option key={c.code} value={c.code}>
-                      {c.label}
-                    </option>
-                  ))}
-                </select>
 
-                <input
-                  type="tel"
-                  name="telefone"
-                  value={formData.telefone}
-                  onChange={handleChange}
-                  required
-                  maxLength={11}
-                  minLength={11}
-                  pattern="\d{11}"
-                  title="Informe 11 dígitos (DDD + número), somente números. Ex: 11987654321"
-                  placeholder="DDD + número (11 dígitos)"
-                  className="flex-1 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-400 outline-none"
-                />
-              </div>
-              <p className="text-xs text-gray-500 mt-1">O código do país não conta nos 11 dígitos.</p>
-              {formData.telefone && (
-                <p className="text-xs text-green-600 mt-2 font-semibold">
-                  Número a ser enviado: <span className="text-gray-800">{formData.paisCodigo}{formData.telefone}</span>
-                </p>
-              )}
+              <PhoneInput
+                country={"br"}
+                value={formData.telefoneFull}
+                onChange={(value, country) => {
+                  const digits = value.replace(/\D/g, "");
+                  const dial = country?.dialCode ?? "";
+
+                  // nacional = remove o código do país
+                  let national = digits;
+                  if (digits.startsWith(dial)) {
+                    national = digits.slice(dial.length);
+                  }
+
+                  setFormData((prev) => ({
+                    ...prev,
+                    telefoneFull: digits,
+                    paisCodigo: `+${dial}`,
+                    telefone: national, // 11 dígitos sem o DDI
+                  }));
+                }}
+                inputClass="!w-full !h-11 !text-base !rounded-lg"
+                buttonClass="!h-11"
+              />
             </div>
 
             <div>
@@ -205,7 +281,9 @@ export default function Register() {
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-1">Número (endereço)</label>
+              <label className="block text-gray-700 mb-1">
+                Número (endereço)
+              </label>
               <input
                 type="text"
                 name="numero"
@@ -230,7 +308,7 @@ export default function Register() {
 
             <button
               type="submit"
-              className="w-full bg-green-700 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition"
+              className="w-full bg-green-700 text-white py-2 rounded-lg font-semibold hover:bg-green-800 transition"
             >
               Cadastrar
             </button>
