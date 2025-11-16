@@ -9,6 +9,7 @@ export default function View() {
   const { categoria, id } = useParams();
   const [produto, setProduto] = useState(null);
   const outlet = useOutletContext?.() || {};
+  // se você tiver addToCart no outlet, pode manter, mas agora usamos localStorage direto
   const { addToCart } = outlet;
 
   const [weights, setWeights] = useState([]);
@@ -17,26 +18,21 @@ export default function View() {
   useEffect(() => {
     const fetchProdutoEWeights = async () => {
       try {
-        // 1) busca produto atual
         const resp = await api.get(`/produtos/${categoria}/${id}`);
         const prod = resp.data;
         setProduto(prod);
 
-        // normaliza id do produto (tolerante a diferentes nomes)
         const prodId =
           prod?.Id_prod ?? prod?.Id ?? prod?.id ?? prod?._id ?? String(id);
 
-        // 2) tenta buscar apenas os ensacados do produto (rota específica)
         let ensResp = await api.get(`/ensacados/produto/${prodId}`);
         let ensData = Array.isArray(ensResp.data) ? ensResp.data : [];
 
-        // Se a rota específica vier vazia, tenta buscar todos e filtrar localmente
         if (!ensData || ensData.length === 0) {
           const allResp = await api.get("/ensacados");
           ensData = Array.isArray(allResp.data) ? allResp.data : [];
         }
 
-        // 3) filtra apenas os ensacados do produto atual (tolerante a nomes diferentes)
         let matched = ensData.filter((e) => {
           const eProdId =
             e?.Id_prod ??
@@ -49,17 +45,14 @@ export default function View() {
           return String(eProdId) === String(prodId);
         });
 
-        // Se a filtragem não encontrou nada, assume que a rota já retornou só os ensacados do produto
         if (!matched || matched.length === 0) {
           matched = ensData;
         }
 
-        // 4) mapeia usando fallbacks robustos, garante id único
         const mapped = matched.map((e, idx) => {
           const idFallback =
             e?.Id_ens ?? e?.Id ?? e?.id ?? e?._id ?? `${prodId}-ens-${idx}`;
 
-          // no seu banco o campo é "Peso"
           const pesoVal =
             e?.Peso_ens ??
             e?.Peso ??
@@ -73,21 +66,15 @@ export default function View() {
           const price =
             e?.Preco_ens ?? e?.Preco ?? e?.preco ?? e?.price ?? null;
 
-          // quantidade (opcional)
-          const quantidade = e?.Quantidade ?? e?.quantidade ?? e?.qtd ?? null;
-
           return {
             id: String(idFallback),
             label,
             peso: pesoVal,
             price,
-            quantidade,
             raw: e,
           };
         });
 
-        // 5) dedupe por peso (garante 1 botão por peso diferente).
-        // Mantém a entrada que tem price quando houver.
         const byPeso = new Map();
         for (const m of mapped) {
           const key = m.peso != null ? String(m.peso) : m.label;
@@ -97,15 +84,13 @@ export default function View() {
             const existing = byPeso.get(key);
             if (
               (existing.price == null || existing.price === "") &&
-              m.price != null &&
-              m.price !== ""
+              m.price != null
             ) {
               byPeso.set(key, m);
             }
           }
         }
 
-        // transforma em array e ordena por peso numérico quando possível
         const deduped = Array.from(byPeso.values()).sort((a, b) => {
           const na = a.peso == null ? Infinity : Number(a.peso);
           const nb = b.peso == null ? Infinity : Number(b.peso);
@@ -126,13 +111,13 @@ export default function View() {
 
   if (!produto) return <p className="p-4">Carregando produto...</p>;
 
+  // função handleAdd: grava no localStorage usando a chave "cart_v1" e propriedade 'quantity'
   const handleAdd = () => {
     const prodId =
       produto?._id ?? produto?.id ?? produto?.Id_prod ?? produto?.Id ?? id;
     const nomeprod =
       produto?.Nome_prod ?? produto?.Nome ?? produto?.nome ?? "Produto";
     const imagem = produto?.Foto_prod ?? produto?.Foto ?? produto?.foto ?? null;
-
     const price =
       selectedWeight?.price ??
       produto?.Preco_med_prod ??
@@ -140,11 +125,20 @@ export default function View() {
       produto?.preco ??
       0;
 
+    const weightKey =
+      selectedWeight?.id ??
+      selectedWeight?.peso ??
+      selectedWeight?.label ??
+      "noWeight";
+    const composedId = `${prodId}-${weightKey}`;
+
     const cartItem = {
-      id: String(prodId),
+      id: composedId, // id composto (produto+peso)
+      prodId: String(prodId),
       nomeprod,
       imagem: imagem ? `/produtos/${imagem}` : null,
       price,
+      quantity: 1, // note: use 'quantity' (em inglês) para compatibilidade com SidebarProducts
       weight: selectedWeight
         ? {
             id: selectedWeight.id,
@@ -156,17 +150,44 @@ export default function View() {
       rawProduto: produto,
     };
 
-    if (typeof addToCart === "function") {
-      addToCart(cartItem);
+    try {
+      const raw = localStorage.getItem("cart_v1");
+      const cart = raw ? JSON.parse(raw) : [];
+
+      const idx = cart.findIndex((it) => it.id === cartItem.id);
+
+      if (idx >= 0) {
+        cart[idx].quantity =
+          (Number(cart[idx].quantity) || 0) + (Number(cartItem.quantity) || 1);
+      } else {
+        cart.push(cartItem);
+      }
+
+      localStorage.setItem("cart_v1", JSON.stringify(cart));
+      // notifica a app que o carrinho mudou (badge e outros ouvintes)
+      window.dispatchEvent(new Event("cart_v1:updated"));
+
+      // não abrir o carrinho automaticamente — linha removida
+
+      // DEBUG: mostra no console o conteúdo do cart após adicionar
+      console.log(
+        "cart_v1 (after add):",
+        JSON.parse(localStorage.getItem("cart_v1"))
+      );
+
       alert("Produto adicionado ao carrinho");
-    } else {
-      console.warn("addToCart não disponível no contexto do Outlet");
+    } catch (e) {
+      console.error("Erro ao adicionar ao carrinho:", e);
+      alert("Erro ao adicionar ao carrinho");
     }
   };
 
   return (
     <>
-      <NavBar initialGreen={true} {...outlet} />
+      <NavBar
+        initialGreen={true}
+        {...(typeof addToCart === "function" ? { addToCart } : {})}
+      />
       <div className="min-h-screen flex items-start md:items-center justify-center bg-gray-100 p-4 pt-20 md:pt-0">
         <div className="bg-white shadow-lg rounded-2xl p-6 md:p-8 w-full max-w-4xl mt-6 md:mt-25">
           <div className="flex flex-col md:flex-row gap-6">

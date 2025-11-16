@@ -1,128 +1,197 @@
-import { FaXmark } from "react-icons/fa6";
-import SidebarProducts from "./SidebarProducts.jsx";
-import { IoSend } from "react-icons/io5";
-import React, { useRef, useState, useEffect } from "react";
+// src/components/cart/SidebarCart.jsx
+import React, { useEffect, useState } from "react";
+import SidebarProducts from "./SidebarProducts";
 
-export default function SidebarCart({ isOpen, onClose, cartItems, removeFromCart, updateQuantity, clearCart }) {
-	// estado/ref para suportar swipe-to-close no mobile
-	const sidebarRef = useRef(null);
-	const [dragging, setDragging] = useState(false);
-	const [startX, setStartX] = useState(0);
-	const [translateX, setTranslateX] = useState(0);
-	const [sidebarWidth, setSidebarWidth] = useState(0);
+/**
+ * SidebarCart melhorado:
+ * - Lê/escreve em localStorage "cart_v1"
+ * - Ouve eventos "cart_v1:updated" e "cart:open"
+ * - Fornece botão flutuante para abrir/fechar o drawer
+ */
 
-	useEffect(() => {
-		// reset quando abrir/fechar
-		if (isOpen) {
-			setTranslateX(0);
-			// garante obter largura atual
-			setSidebarWidth(sidebarRef.current?.offsetWidth || 0);
-		} else {
-			setTranslateX(0);
-			setDragging(false);
-		}
-	}, [isOpen]);
+export default function SidebarCart() {
+  const [cart, setCart] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
 
-	const handleTouchStart = (e) => {
-		if (!isOpen) return;
-		const touchX = e.touches[0].clientX;
-		setStartX(touchX);
-		setSidebarWidth(sidebarRef.current?.offsetWidth || 0);
-		setDragging(true);
-	};
+  const loadCart = () => {
+    try {
+      const raw = localStorage.getItem("cart_v1");
+      const arr = raw ? JSON.parse(raw) : [];
+      setCart(Array.isArray(arr) ? arr : []);
+    } catch (e) {
+      console.error("Erro ao carregar carrinho:", e);
+      setCart([]);
+    }
+  };
 
-	const handleTouchMove = (e) => {
-		if (!dragging) return;
-		const touchX = e.touches[0].clientX;
-		const delta = touchX - startX; // positivo quando arrasta para a direita (fechar)
-		if (delta <= 0) {
-			// não permitir arrastar para dentro além do limite
-			setTranslateX(0);
-			return;
-		}
-		// limitar ao tamanho da sidebar
-		const limited = Math.min(delta, sidebarWidth);
-		setTranslateX(limited);
-		// opcional: prevenir scroll vertical quando movimento horizontal significativo
-		if (Math.abs(delta) > 10) e?.preventDefault?.();
-	};
+  useEffect(() => {
+    loadCart();
 
-	const handleTouchEnd = () => {
-		if (!dragging) return;
-		setDragging(false);
-		// se arrastou mais que 25% da largura, fechar
-		if (translateX > sidebarWidth * 0.25) {
-			// limpa estado de arrasto antes de fechar
-			setTranslateX(0);
-			onClose?.();
-		} else {
-			// voltar à posição original com animação
-			setTranslateX(0);
-		}
-	};
+    // escuta mudanças de localStorage vindas de outras abas
+    const onStorage = (e) => {
+      if (e.key === "cart_v1") loadCart();
+    };
+    window.addEventListener("storage", onStorage);
 
-    return (
+    // escuta evento custom quando adicionamos via handleAdd
+    const handlerUpdated = () => loadCart();
+    window.addEventListener("cart_v1:updated", handlerUpdated);
+
+    // escuta pedido para abrir o carrinho
+    const handlerOpen = () => setIsOpen(true);
+    window.addEventListener("cart:open", handlerOpen);
+
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("cart_v1:updated", handlerUpdated);
+      window.removeEventListener("cart:open", handlerOpen);
+    };
+  }, []);
+
+  const saveCart = (nextCart) => {
+    try {
+      localStorage.setItem("cart_v1", JSON.stringify(nextCart));
+      setCart(nextCart);
+      // avisa outras partes (se necessário)
+      window.dispatchEvent(new Event("cart_v1:updated"));
+    } catch (e) {
+      console.error("Erro ao salvar carrinho:", e);
+    }
+  };
+
+  const removeItem = (id) => {
+    const next = cart.filter((it) => it.id !== id);
+    saveCart(next);
+  };
+
+  const updateQuantity = (id, quantity) => {
+    const q = Math.max(0, Number(quantity) || 0);
+    const next = cart.map((it) => (it.id === id ? { ...it, quantity: q } : it));
+    saveCart(next);
+  };
+
+  const clearCart = () => {
+    saveCart([]);
+    setIsOpen(false);
+  };
+
+  // botão flutuante para abrir/fechar (sempre disponível)
+  const FloatingButton = () => (
+    <button
+      onClick={() => setIsOpen((s) => !s)}
+      aria-label="Abrir/fechar carrinho"
+      style={{
+        position: "fixed",
+        right: 20,
+        bottom: 20,
+        background: "#116530",
+        color: "#fff",
+        padding: "10px 12px",
+        borderRadius: 999,
+        border: "none",
+        zIndex: 1200,
+        cursor: "pointer",
+      }}
+    >
+      Carrinho ({cart.reduce((s, it) => s + (Number(it.quantity) || 0), 0)})
+    </button>
+  );
+
+  return (
     <>
-      {/* Fundo escuro quando aberto */}
+      <FloatingButton />
+
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black opacity-40 z-40"
-          onClick={onClose}
-        ></div>
-      )}
-
-      {/* Sidebar em si */}
-      <aside
-        ref={sidebarRef}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        className={`bg-white fixed right-0 top-0 z-50 w-full max-w-[400px] h-full p-8 shadow-[5px_5px_50px_rgba(0,0,0,0.5)] overflow-y-auto scrollbar-hide transform transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-        // durante o arrasto aplicamos um transform inline (em px) e desabilitamos transição para seguir o dedo
-        style={
-          dragging
-            ? { transform: `translateX(${translateX}px)`, transition: "none" }
-            : undefined
-        }
-      >
-        <div className="flex justify-between mb-4">
-          <h1><b>Seu carrinho</b></h1>
-          <button
-            className="bg-gray-800 hover:bg-red-700 text-white w-7 h-7 rounded-full flex items-center justify-center"
-            onClick={onClose}
-          >
-            <FaXmark />
-          </button>
-        </div>
-
-           <div className="sidebar-products-list">
-        {cartItems.length === 0 ? (
-          <p className="text-gray-500">Seu carrinho está vazio.</p>
-        ) : (
-          cartItems.map((item) => (
-            <SidebarProducts key={item.id} item={item} onRemove={removeFromCart} onUpdateQty={updateQuantity}/>
-          ))
-        )}
-      </div>
-
-
-        {cartItems.length > 0 && (
-          <button
-            className="bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded w-full flex items-center justify-center gap-2 mt-2"
-            onClick={() => {
-              // aqui você pode integrar com API futuramente
-              alert("Pedido enviado com sucesso!");
-              clearCart(); // esvazia carrinho
-              onClose();   // fecha sidebar
+        <aside
+          style={{
+            position: "fixed",
+            right: 0,
+            top: 0,
+            width: 360,
+            height: "100vh",
+            background: "#fff",
+            boxShadow: "-12px 0 24px rgba(0,0,0,0.12)",
+            zIndex: 1300,
+            padding: 16,
+            overflowY: "auto",
+          }}
+          aria-live="polite"
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
-            Enviar Pedido <IoSend />
-          </button>
-        )}
+            <h3 style={{ margin: 0 }}>Seu carrinho</h3>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                onClick={() => {
+                  clearCart();
+                }}
+                title="Limpar carrinho"
+                style={{
+                  background: "transparent",
+                  border: "1px solid #ddd",
+                  padding: "6px 8px",
+                  borderRadius: 6,
+                  cursor: "pointer",
+                }}
+              >
+                Limpar
+              </button>
+              <button
+                onClick={() => setIsOpen(false)}
+                title="Fechar"
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  fontSize: 16,
+                  cursor: "pointer",
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          </div>
 
-      </aside>
+          <div style={{ marginTop: 12 }}>
+            {cart.length === 0 && <p>Seu carrinho está vazio.</p>}
+
+            {cart.map((it) => (
+              <SidebarProducts
+                key={it.id}
+                item={it}
+                onRemove={(id) => removeItem(id)}
+                onUpdateQty={(id, qty) => updateQuantity(id, qty)}
+              />
+            ))}
+          </div>
+
+          {cart.length > 0 && (
+            <div style={{ marginTop: 18 }}>
+              <button
+                onClick={() => {
+                  alert("Enviar pedido - implemente fluxo de checkout");
+                }}
+                style={{
+                  background: "#116530",
+                  color: "#fff",
+                  width: "100%",
+                  padding: "10px 14px",
+                  borderRadius: 6,
+                  border: "none",
+                  cursor: "pointer",
+                  marginBottom: 8,
+                }}
+              >
+                Enviar Pedido ►
+              </button>
+            </div>
+          )}
+        </aside>
+      )}
     </>
   );
 }
