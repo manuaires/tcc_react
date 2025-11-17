@@ -2,43 +2,62 @@
 import React, { useEffect, useState } from "react";
 import SidebarProducts from "./SidebarProducts";
 
-/**
- * SidebarCart melhorado:
- * - Lê/escreve em localStorage "cart_v1"
- * - Ouve eventos "cart_v1:updated" e "cart:open"
- * - Fornece botão flutuante para abrir/fechar o drawer
- */
-
 export default function SidebarCart() {
   const [cart, setCart] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
 
+  // verifica se já existe uma instância ativa (guard)
+  const [isActive] = useState(() => {
+    if (typeof window === "undefined") return true;
+    if (window.__SIDEBAR_CART_MOUNTED) {
+      return false;
+    }
+    window.__SIDEBAR_CART_MOUNTED = true;
+    return true;
+  });
+
+  // limpa flag quando desmonta (apenas se era ativa)
+  useEffect(() => {
+    return () => {
+      if (isActive && typeof window !== "undefined") {
+        window.__SIDEBAR_CART_MOUNTED = false;
+      }
+    };
+  }, [isActive]);
+
+  // helpers para carregar / salvar
   const loadCart = () => {
     try {
       const raw = localStorage.getItem("cart_v1");
       const arr = raw ? JSON.parse(raw) : [];
       setCart(Array.isArray(arr) ? arr : []);
-    } catch (e) {
-      console.error("Erro ao carregar carrinho:", e);
+    } catch {
       setCart([]);
     }
   };
 
+  const saveCart = (nextCart) => {
+    try {
+      localStorage.setItem("cart_v1", JSON.stringify(nextCart));
+      setCart(nextCart);
+      window.dispatchEvent(new Event("cart_v1:updated"));
+    } catch {}
+  };
+
+  // se não for instância ativa, não registra listeners e não renderiza o drawer
   useEffect(() => {
+    if (!isActive) return;
+
     loadCart();
 
-    // escuta mudanças de localStorage vindas de outras abas
     const onStorage = (e) => {
       if (e.key === "cart_v1") loadCart();
     };
-    window.addEventListener("storage", onStorage);
-
-    // escuta evento custom quando adicionamos via handleAdd
     const handlerUpdated = () => loadCart();
-    window.addEventListener("cart_v1:updated", handlerUpdated);
-
-    // escuta pedido para abrir o carrinho
     const handlerOpen = () => setIsOpen(true);
+
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("cart_v1:updated", handlerUpdated);
     window.addEventListener("cart:open", handlerOpen);
 
     return () => {
@@ -46,18 +65,7 @@ export default function SidebarCart() {
       window.removeEventListener("cart_v1:updated", handlerUpdated);
       window.removeEventListener("cart:open", handlerOpen);
     };
-  }, []);
-
-  const saveCart = (nextCart) => {
-    try {
-      localStorage.setItem("cart_v1", JSON.stringify(nextCart));
-      setCart(nextCart);
-      // avisa outras partes (se necessário)
-      window.dispatchEvent(new Event("cart_v1:updated"));
-    } catch (e) {
-      console.error("Erro ao salvar carrinho:", e);
-    }
-  };
+  }, [isActive]);
 
   const removeItem = (id) => {
     const next = cart.filter((it) => it.id !== id);
@@ -75,32 +83,11 @@ export default function SidebarCart() {
     setIsOpen(false);
   };
 
-  // botão flutuante para abrir/fechar (sempre disponível)
-  const FloatingButton = () => (
-    <button
-      onClick={() => setIsOpen((s) => !s)}
-      aria-label="Abrir/fechar carrinho"
-      style={{
-        position: "fixed",
-        right: 20,
-        bottom: 20,
-        background: "#116530",
-        color: "#fff",
-        padding: "10px 12px",
-        borderRadius: 999,
-        border: "none",
-        zIndex: 1200,
-        cursor: "pointer",
-      }}
-    >
-      Carrinho ({cart.reduce((s, it) => s + (Number(it.quantity) || 0), 0)})
-    </button>
-  );
+  // se não for a instância ativa, não renderiza nada
+  if (!isActive) return null;
 
   return (
     <>
-      <FloatingButton />
-
       {isOpen && (
         <aside
           style={{

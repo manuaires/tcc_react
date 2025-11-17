@@ -6,9 +6,11 @@ import logosimp from "../../assets/logosimp.svg";
 import Button from "./ButtonNav.jsx";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCartShopping } from "@fortawesome/free-solid-svg-icons";
-import SidebarCart from "../cart/SidebarCart.jsx";
 import ButtonLog from "./ButtonLog.jsx";
 import { IoIosArrowDown } from "react-icons/io";
+
+// pequeno debounce global para evitar dispatchs repetidos em curto espaço de tempo
+let __lastCartOpenAt = 0;
 
 export default function NavBar({ initialGreen = false }) {
   const navigate = useNavigate();
@@ -124,7 +126,25 @@ export default function NavBar({ initialGreen = false }) {
 
   // abre o sidebar global ao disparar evento que SidebarCart escuta
   const openCart = () => {
-    window.dispatchEvent(new Event("cart:open"));
+    try {
+      const now = Date.now();
+      if (now - __lastCartOpenAt < 300) return; // ignora repetidos em <300ms
+      __lastCartOpenAt = now;
+
+      // se existir manager global (singleton), use-o — caso contrário, dispatch padrão
+      if (
+        window.__SIDEBAR_CART_MANAGER &&
+        typeof window.__SIDEBAR_CART_MANAGER.open === "function"
+      ) {
+        window.__SIDEBAR_CART_MANAGER.open();
+        return;
+      }
+
+      window.dispatchEvent(new Event("cart:open"));
+    } catch (e) {
+      console.error("Erro ao abrir cart:", e);
+      window.dispatchEvent(new Event("cart:open"));
+    }
   };
 
   return (
@@ -284,9 +304,6 @@ export default function NavBar({ initialGreen = false }) {
           }
         `}</style>
       </nav>
-
-      {/* garante que o SidebarCart está montado (escuta eventos e abre/fecha) */}
-      <SidebarCart />
     </>
   );
 }
