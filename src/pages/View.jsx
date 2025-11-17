@@ -29,7 +29,22 @@ export default function View() {
           return data ?? null;
         };
 
-        // --- CEREAIS
+        const extractNumberFrom = (v) => {
+          if (v === null || v === undefined) return null;
+          const s = String(v);
+          const numeric = s.replace(/[^\d.,]/g, "").replace(",", ".");
+          // tenta parseFloat, se der NaN usa string limpa sem pontuação
+          const parsed = parseFloat(numeric);
+          if (!Number.isNaN(parsed)) {
+            // se for inteiro, devolve inteiro (ex: 25)
+            return Number.isInteger(parsed) ? parsed : parsed;
+          }
+          // fallback: extrai apenas dígitos
+          const digits = s.match(/\d+/);
+          return digits ? Number(digits[0]) : s;
+        };
+
+        // --- Caso: CEREAIS (busca na tabela produto + variações em produto_ensacado)
         if (cat === "cereais") {
           const resp = await api.get(`/produtos/${categoria}/${id}`);
           const prodRaw = normalize(resp?.data);
@@ -41,10 +56,21 @@ export default function View() {
 
           const display = {
             source: "produto",
-            prodId: prodRaw?.Id_prod ?? prodRaw?.Id ?? prodRaw?.id ?? prodRaw?._id ?? String(id),
-            name: prodRaw?.Nome_prod ?? prodRaw?.Nome ?? prodRaw?.nome ?? "Produto",
-            image: prodRaw?.Foto_prod ?? prodRaw?.Foto ?? prodRaw?.foto ?? null,
-            description: prodRaw?.Descricao_prod ?? prodRaw?.Descricao ?? prodRaw?.descricao ?? null,
+            prodId:
+              prodRaw?.Id_prod ??
+              prodRaw?.Id ??
+              prodRaw?.id ??
+              prodRaw?._id ??
+              String(id),
+            name:
+              prodRaw?.Nome_prod ?? prodRaw?.Nome ?? prodRaw?.nome ?? "Produto",
+            image:
+              prodRaw?.Foto_prod ?? prodRaw?.Foto ?? prodRaw?.foto ?? null,
+            description:
+              prodRaw?.Descricao_prod ??
+              prodRaw?.Descricao ??
+              prodRaw?.descricao ??
+              null,
             raw: prodRaw,
           };
 
@@ -53,56 +79,68 @@ export default function View() {
           const prodId = display.prodId;
           try {
             console.debug("REQUEST -> /ensacados/produto/" + prodId);
-            const ensResp = await api.get(`/ensacados/produto/${encodeURIComponent(prodId)}`);
+            const ensResp = await api.get(
+              `/ensacados/produto/${encodeURIComponent(prodId)}`
+            );
             console.debug("RESPONSE /ensacados/produto ->", ensResp?.data);
             const ensArr = Array.isArray(ensResp.data) ? ensResp.data : [];
 
-            // --- NOVA LÓGICA: somente filtra por Id_prod se a resposta realmente incluir esse campo
-            const hasIdProdField = ensArr.some((e) => {
-              return e?.Id_prod !== undefined || e?.id_prod !== undefined || e?.IdProd !== undefined || e?.produto_id !== undefined;
-            });
+            // somente filtra por Id_prod se a resposta trouxer esse campo
+            const hasIdProdField = ensArr.some((e) =>
+              [e?.Id_prod, e?.id_prod, e?.IdProd, e?.produto_id].some(
+                (x) => x !== undefined
+              )
+            );
 
             let matched;
             if (hasIdProdField) {
-              // filtra estritamente quando a resposta traz o campo de relação
               matched = ensArr.filter((e) => {
-                const eProdId = e?.Id_prod ?? e?.id_prod ?? e?.IdProd ?? e?.produto_id ?? null;
-                return eProdId !== null && eProdId !== undefined && String(eProdId) === String(prodId);
+                const eProdId =
+                  e?.Id_prod ?? e?.id_prod ?? e?.IdProd ?? e?.produto_id ?? null;
+                return (
+                  eProdId !== null &&
+                  eProdId !== undefined &&
+                  String(eProdId) === String(prodId)
+                );
               });
             } else {
-              // caso a resposta NÃO traga campo de relação, assumimos que o endpoint já retornou apenas os ensacados do produto
               matched = ensArr;
             }
 
-            // mapear para padrão { id, label, peso, price, raw }
+            // mapear e dedupe por peso
             const mapped = (matched || []).map((e, idx) => {
-              const idFallback = e?.Id_ens ?? e?.Id ?? e?.id ?? e?._id ?? `${prodId}-ens-${idx}`;
-
-              // tenta várias propriedades possíveis para peso (Peso_ens, Peso, peso, etc)
-              const pesoVal = e?.Peso_ens ?? e?.Peso ?? e?.peso ?? e?.peso_ens ?? e?.peso_kg ?? null;
-
-              const label = pesoVal != null ? `${pesoVal} kg` : `Peso ${idx + 1}`;
-
-              // tenta várias propriedades possíveis para preço
-              const price = e?.Preco_ens ?? e?.Preco ?? e?.preco ?? e?.price ?? null;
-
+              const idFallback =
+                e?.Id_ens ?? e?.Id ?? e?.id ?? e?._id ?? `${prodId}-ens-${idx}`;
+              const pesoVal =
+                e?.Peso_ens ??
+                e?.Peso ??
+                e?.peso ??
+                e?.peso_ens ??
+                e?.peso_kg ??
+                null;
+              const pesoNum = extractNumberFrom(pesoVal);
+              const label = pesoNum != null ? `${pesoNum} kg` : `Peso ${idx + 1}`;
+              const price =
+                e?.Preco_ens ?? e?.Preco ?? e?.preco ?? e?.price ?? null;
               return {
                 id: String(idFallback),
                 label,
-                peso: pesoVal,
+                peso: pesoNum,
                 price,
                 raw: e,
               };
             });
 
-            // dedupe por peso (mantendo sua lógica)
             const byPeso = new Map();
             for (const m of mapped) {
               const key = m.peso != null ? String(m.peso) : m.label;
               if (!byPeso.has(key)) byPeso.set(key, m);
               else {
                 const existing = byPeso.get(key);
-                if ((existing.price == null || existing.price === "") && m.price != null) {
+                if (
+                  (existing.price == null || existing.price === "") &&
+                  m.price != null
+                ) {
                   byPeso.set(key, m);
                 }
               }
@@ -126,18 +164,23 @@ export default function View() {
           return;
         }
 
-        // --- RAÇÕES / VARIEDADES
+        // --- Caso: RAÇÕES / VARIEDADES (busca em outros_produtos e EXIBE PESO COMO NÚMERO)
         if (cat === "rações" || cat === "variedades") {
           let out = null;
           try {
             const respOut = await api.get(`/outros_produtos/${id}`);
             out = normalize(respOut?.data);
           } catch (errOut) {
+            // fallback para a rota já existente no backend
             try {
               const respFallback = await api.get(`/produtos/${categoria}/${id}`);
               out = normalize(respFallback?.data);
             } catch (errFallback) {
-              console.warn("Erro ao buscar outros_produtos", errOut, errFallback);
+              console.warn(
+                "Erro ao buscar outros_produtos (routes falharam)",
+                errOut,
+                errFallback
+              );
               out = null;
             }
           }
@@ -153,13 +196,45 @@ export default function View() {
             prodId: out?.Id_out ?? out?.Id ?? out?.id ?? String(id),
             name: out?.Nome_out ?? out?.Nome ?? out?.nome ?? "Produto",
             image: out?.Foto_out ?? out?.Foto ?? out?.foto ?? null,
-            description: out?.Descricao_out ?? out?.Descricao ?? out?.descricao ?? null,
+            description:
+              out?.Descricao_out ?? out?.Descricao ?? out?.descricao ?? null,
             raw: out,
           };
 
           setProduto(displayOut);
-          setWeights([]);
-          setSelectedWeight(null);
+
+          // --- criar listagem de peso a partir do campo do registro de outros_produtos
+          // tenta campos possíveis: Peso_out, Peso, peso, Peso_out, Peso (variantes)
+          const pesoValCandidate =
+            out?.Peso_out ?? out?.Peso ?? out?.peso ?? out?.peso_out ?? null;
+          const pesoNum = extractNumberFrom(pesoValCandidate);
+
+          if (pesoNum !== null && pesoNum !== undefined && pesoNum !== "") {
+            const price =
+              out?.Preco_out ??
+              out?.Preco_med_out ??
+              out?.Preco ??
+              out?.preco ??
+              out?.Preco_med ??
+              out?.price ??
+              null;
+
+            const w = {
+              id: `${displayOut.prodId}-peso-${String(pesoNum)}`,
+              // para rações/variedades o pedido foi EXIBIR só o número sem 'kg'
+              label: String(pesoNum),
+              peso: pesoNum,
+              price,
+              raw: out,
+            };
+
+            setWeights([w]);
+            setSelectedWeight(w);
+          } else {
+            setWeights([]);
+            setSelectedWeight(null);
+          }
+
           setLoading(false);
           return;
         }
@@ -175,10 +250,20 @@ export default function View() {
           }
           setProduto({
             source: "produto",
-            prodId: fallbackProd?.Id_prod ?? fallbackProd?.Id ?? fallbackProd?.id ?? String(id),
-            name: fallbackProd?.Nome_prod ?? fallbackProd?.Nome ?? fallbackProd?.nome ?? "Produto",
-            image: fallbackProd?.Foto_prod ?? fallbackProd?.Foto ?? fallbackProd?.foto ?? null,
-            description: fallbackProd?.Descricao_prod ?? fallbackProd?.Descricao ?? fallbackProd?.descricao ?? null,
+            prodId:
+              fallbackProd?.Id_prod ?? fallbackProd?.Id ?? fallbackProd?.id ?? String(id),
+            name:
+              fallbackProd?.Nome_prod ??
+              fallbackProd?.Nome ??
+              fallbackProd?.nome ??
+              "Produto",
+            image:
+              fallbackProd?.Foto_prod ?? fallbackProd?.Foto ?? fallbackProd?.foto ?? null,
+            description:
+              fallbackProd?.Descricao_prod ??
+              fallbackProd?.Descricao ??
+              fallbackProd?.descricao ??
+              null,
             raw: fallbackProd,
           });
         } catch (err) {
@@ -204,7 +289,10 @@ export default function View() {
   if (!produto)
     return (
       <>
-        <NavBar initialGreen={true} {...(typeof addToCart === "function" ? { addToCart } : {})} />
+        <NavBar
+          initialGreen={true}
+          {...(typeof addToCart === "function" ? { addToCart } : {})}
+        />
         <div className="min-h-screen flex items-center justify-center p-4">
           <div className="bg-white shadow rounded p-6 max-w-lg text-center">
             <h2 className="text-xl font-semibold mb-2">Produto não encontrado</h2>
@@ -291,14 +379,12 @@ export default function View() {
                           key={key}
                           type="button"
                           onClick={() => setSelectedWeight(w)}
-                          className={`min-w-[64px] px-2 h-12 flex items-center justify-center rounded-md border text-sm select-none ${
-                            active ? "bg-green-700 text-white border-green-700" : "bg-gray-100 text-gray-700 border-gray-300 hover:border-green-500"
-                          }`}
+                          className={`min-w-[48px] px-2 h-10 flex items-center justify-center rounded-md border text-sm select-none ${active ? "bg-green-700 text-white border-green-700" : "bg-gray-100 text-gray-700 border-gray-300 hover:border-green-500"}`}
                           aria-pressed={active}
                         >
                           <div className="text-center">
                             <div className="font-bold text-sm">{w.label}</div>
-                            {w.price != null && <div className="text-xs">R$ {Number(w.price).toFixed(2)}</div>}
+                            {w.price != null && <div className="text-xs"></div>}
                           </div>
                         </button>
                       );
@@ -307,9 +393,7 @@ export default function View() {
                 )}
               </div>
 
-              <p className="text-sm mb-4">
-                <strong>Entre em contato para consultar preços!</strong>
-              </p>
+              <p className="text-sm mb-4"><strong>Entre em contato para consultar preços!</strong></p>
 
               <div className="mt-auto">
                 <button type="button" aria-label="Adicionar ao carrinho" onClick={handleAdd} className="bg-green-700 w-full h-10 hover:bg-green-800 text-sm text-white rounded-sm flex items-center justify-center gap-2">
@@ -321,9 +405,7 @@ export default function View() {
               <hr className="my-4 text-gray-300" />
 
               <div>
-                <p>
-                  <strong>Descrição:</strong>
-                </p>
+                <p><strong>Descrição:</strong></p>
                 <p>{produto.description ?? "Sem descrição disponível."}</p>
               </div>
             </div>
