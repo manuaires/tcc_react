@@ -1,4 +1,3 @@
-// src/pages/View.jsx
 import { useEffect, useState } from "react";
 import { useParams, useOutletContext } from "react-router-dom";
 import api from "../api";
@@ -8,9 +7,12 @@ import { FaCartPlus } from "react-icons/fa6";
 export default function View() {
   const { categoria, id } = useParams();
   const [loading, setLoading] = useState(true);
-  const [produto, setProduto] = useState(null);
+  const [produto, setProduto] = useState(null); // normalized display object
   const [weights, setWeights] = useState([]);
   const [selectedWeight, setSelectedWeight] = useState(null);
+  const [codigo, setCodigo] = useState(null);
+  const [codigoLoading, setCodigoLoading] = useState(false);
+
   const outlet = useOutletContext?.() || {};
   const { addToCart } = outlet;
 
@@ -20,6 +22,8 @@ export default function View() {
       setProduto(null);
       setWeights([]);
       setSelectedWeight(null);
+      setCodigo(null);
+      setCodigoLoading(false);
 
       try {
         const cat = String(categoria || "").toLowerCase();
@@ -33,18 +37,15 @@ export default function View() {
           if (v === null || v === undefined) return null;
           const s = String(v);
           const numeric = s.replace(/[^\d.,]/g, "").replace(",", ".");
-          // tenta parseFloat, se der NaN usa string limpa sem pontuação
           const parsed = parseFloat(numeric);
           if (!Number.isNaN(parsed)) {
-            // se for inteiro, devolve inteiro (ex: 25)
             return Number.isInteger(parsed) ? parsed : parsed;
           }
-          // fallback: extrai apenas dígitos
           const digits = s.match(/\d+/);
           return digits ? Number(digits[0]) : s;
         };
 
-        // --- Caso: CEREAIS (busca na tabela produto + variações em produto_ensacado)
+        // --- CEREAIS: produto (tabela produto) + variações em produto_ensacado
         if (cat === "cereais") {
           const resp = await api.get(`/produtos/${categoria}/${id}`);
           const prodRaw = normalize(resp?.data);
@@ -78,14 +79,11 @@ export default function View() {
 
           const prodId = display.prodId;
           try {
-            console.debug("REQUEST -> /ensacados/produto/" + prodId);
             const ensResp = await api.get(
               `/ensacados/produto/${encodeURIComponent(prodId)}`
             );
-            console.debug("RESPONSE /ensacados/produto ->", ensResp?.data);
             const ensArr = Array.isArray(ensResp.data) ? ensResp.data : [];
 
-            // somente filtra por Id_prod se a resposta trouxer esse campo
             const hasIdProdField = ensArr.some((e) =>
               [e?.Id_prod, e?.id_prod, e?.IdProd, e?.produto_id].some(
                 (x) => x !== undefined
@@ -107,7 +105,7 @@ export default function View() {
               matched = ensArr;
             }
 
-            // mapear e dedupe por peso
+            // map + dedupe por peso (mantendo sua lógica)
             const mapped = (matched || []).map((e, idx) => {
               const idFallback =
                 e?.Id_ens ?? e?.Id ?? e?.id ?? e?._id ?? `${prodId}-ens-${idx}`;
@@ -137,10 +135,7 @@ export default function View() {
               if (!byPeso.has(key)) byPeso.set(key, m);
               else {
                 const existing = byPeso.get(key);
-                if (
-                  (existing.price == null || existing.price === "") &&
-                  m.price != null
-                ) {
+                if ((existing.price == null || existing.price === "") && m.price != null) {
                   byPeso.set(key, m);
                 }
               }
@@ -164,23 +159,18 @@ export default function View() {
           return;
         }
 
-        // --- Caso: RAÇÕES / VARIEDADES (busca em outros_produtos e EXIBE PESO COMO NÚMERO)
+        // --- RAÇÕES / VARIEDADES: buscar em outros_produtos e exibir peso numérico (campo Peso)
         if (cat === "rações" || cat === "variedades") {
           let out = null;
           try {
             const respOut = await api.get(`/outros_produtos/${id}`);
             out = normalize(respOut?.data);
           } catch (errOut) {
-            // fallback para a rota já existente no backend
             try {
               const respFallback = await api.get(`/produtos/${categoria}/${id}`);
               out = normalize(respFallback?.data);
             } catch (errFallback) {
-              console.warn(
-                "Erro ao buscar outros_produtos (routes falharam)",
-                errOut,
-                errFallback
-              );
+              console.warn("Erro ao buscar outros_produtos (routes falharam)", errOut, errFallback);
               out = null;
             }
           }
@@ -203,8 +193,7 @@ export default function View() {
 
           setProduto(displayOut);
 
-          // --- criar listagem de peso a partir do campo do registro de outros_produtos
-          // tenta campos possíveis: Peso_out, Peso, peso, Peso_out, Peso (variantes)
+          // cria lista de peso a partir do campo Peso_out / Peso / peso
           const pesoValCandidate =
             out?.Peso_out ?? out?.Peso ?? out?.peso ?? out?.peso_out ?? null;
           const pesoNum = extractNumberFrom(pesoValCandidate);
@@ -221,7 +210,7 @@ export default function View() {
 
             const w = {
               id: `${displayOut.prodId}-peso-${String(pesoNum)}`,
-              // para rações/variedades o pedido foi EXIBIR só o número sem 'kg'
+              // para rações/variedades mostramos só o número (sem 'kg')
               label: String(pesoNum),
               peso: pesoNum,
               price,
@@ -230,9 +219,21 @@ export default function View() {
 
             setWeights([w]);
             setSelectedWeight(w);
+
+            // também já setamos o código do registro de outros_produtos (Codigo_out / Codigo)
+            const cod =
+              out?.Codigo_out ??
+              out?.Codigo ??
+              out?.CodigoOut ??
+              out?.Codigo_outo ??
+              null;
+            setCodigo(cod ?? null);
           } else {
             setWeights([]);
             setSelectedWeight(null);
+            setCodigo(
+              out?.Codigo_out ?? out?.Codigo ?? out?.CodigoOut ?? out?.Codigo_outo ?? null
+            );
           }
 
           setLoading(false);
@@ -284,15 +285,56 @@ export default function View() {
     fetchData();
   }, [categoria, id]);
 
+ useEffect(() => {
+  const fetchCodigoParaCereal = async () => {
+    if (!produto) return;
+    if (produto.source !== "produto") return; // só para cereais
+    if (!selectedWeight) {
+      setCodigo(null);
+      return;
+    }
+
+    const prodId = produto.prodId;
+    const peso = selectedWeight.peso;
+
+    console.log(`Requisitando código: prodId=${prodId}, peso=${peso}`);  // Debug para verificar os valores
+
+    if (peso === null || peso === undefined || String(peso).trim() === "") {
+      setCodigo(null);
+      return;
+    }
+
+    setCodigoLoading(true);
+    setCodigo(null);
+    try {
+      const resp = await api.get(
+        `/ensacados/codigo?prodId=${encodeURIComponent(prodId)}&peso=${encodeURIComponent(peso)}`
+      );
+      const data = resp?.data ?? [];
+      console.log("API Response: ", data);  // Log da resposta da API
+
+      const cod =
+        data.length > 0 ? data[0].codigo : null;  // Se houver algum código, use o primeiro
+      setCodigo(cod ?? null);
+    } catch (err) {
+      console.warn("Erro ao buscar codigo do ensacado:", err);
+      setCodigo(null);
+    } finally {
+      setCodigoLoading(false);
+    }
+  };
+
+  fetchCodigoParaCereal();
+}, [produto, selectedWeight]);
+
+
+
   if (loading) return <p className="p-4">Carregando produto...</p>;
 
   if (!produto)
     return (
       <>
-        <NavBar
-          initialGreen={true}
-          {...(typeof addToCart === "function" ? { addToCart } : {})}
-        />
+        <NavBar initialGreen={true} {...(typeof addToCart === "function" ? { addToCart } : {})} />
         <div className="min-h-screen flex items-center justify-center p-4">
           <div className="bg-white shadow rounded p-6 max-w-lg text-center">
             <h2 className="text-xl font-semibold mb-2">Produto não encontrado</h2>
@@ -325,9 +367,7 @@ export default function View() {
       imagem: imagem ? `/produtos/${imagem}` : null,
       price,
       quantity: 1,
-      weight: selectedWeight
-        ? { id: selectedWeight.id, label: selectedWeight.label, price: selectedWeight.price, peso: selectedWeight.peso }
-        : null,
+      weight: selectedWeight ? { id: selectedWeight.id, label: selectedWeight.label, price: selectedWeight.price, peso: selectedWeight.peso } : null,
       rawProduto: produto.raw,
     };
 
@@ -384,13 +424,26 @@ export default function View() {
                         >
                           <div className="text-center">
                             <div className="font-bold text-sm">{w.label}</div>
-                            {w.price != null && <div className="text-xs"></div>}
                           </div>
                         </button>
                       );
                     })}
                   </div>
                 )}
+              </div>
+
+              {/* Código (único lugar que atualiza conforme seleção) */}
+              <div className="mb-4">
+                <h3 className="font-semibold text-gray-700 mb-2">Código</h3>
+                <div className="text-lg font-mono">
+                  {codigoLoading ? (
+                    <span>Carregando código...</span>
+                  ) : codigo ? (
+                    <span>{codigo}</span>
+                  ) : (
+                    <span className="text-gray-500">—</span>
+                  )}
+                </div>
               </div>
 
               <p className="text-sm mb-4"><strong>Entre em contato para consultar preços!</strong></p>
