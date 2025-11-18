@@ -1,10 +1,17 @@
 // src/components/cart/SidebarCart.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import SidebarProducts from "./SidebarProducts";
 
 export default function SidebarCart() {
   const [cart, setCart] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+
+  // novo: controla montagem do drawer para permitir animação de saída
+  const [mounted, setMounted] = useState(false);
+  const ANIM_DURATION = 300; // ms
+
+  // ref para detectar clique fora
+  const asideRef = useRef(null);
 
   // verifica se já existe uma instância ativa (guard)
   const [isActive] = useState(() => {
@@ -54,7 +61,15 @@ export default function SidebarCart() {
       if (e.key === "cart_v1") loadCart();
     };
     const handlerUpdated = () => loadCart();
-    const handlerOpen = () => setIsOpen(true);
+    // atualiza: monta antes de abrir para permitir animação de entrada
+    const handlerOpen = () => {
+      setMounted(true);
+      // aguarda próximo tick para que o aside seja renderizado no estado "fechado"
+      // e então dispare a transição para o estado "aberto"
+      const t = setTimeout(() => setIsOpen(true), 10);
+      // limpa caso o componente seja desmontado rapidamente
+      return () => clearTimeout(t);
+    };
 
     window.addEventListener("storage", onStorage);
     window.addEventListener("cart_v1:updated", handlerUpdated);
@@ -66,6 +81,28 @@ export default function SidebarCart() {
       window.removeEventListener("cart:open", handlerOpen);
     };
   }, [isActive]);
+
+  // quando isOpen for false, aguarda animação e desmonta
+  useEffect(() => {
+    if (!mounted) return;
+    if (isOpen) return; // quando aberto, nada a fazer
+    const t = setTimeout(() => setMounted(false), ANIM_DURATION);
+    return () => clearTimeout(t);
+  }, [isOpen, mounted]);
+
+  // listener para fechar ao clicar fora do aside
+  useEffect(() => {
+    if (!isActive || !isOpen) return;
+
+    const onDocClick = (e) => {
+      if (asideRef.current && !asideRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [isActive, isOpen]);
 
   const removeItem = (id) => {
     const next = cart.filter((it) => it.id !== id);
@@ -88,8 +125,10 @@ export default function SidebarCart() {
 
   return (
     <>
-      {isOpen && (
+      {mounted && (
         <aside
+          ref={asideRef}
+          // animação de entrada/saída via transform + opacity
           style={{
             position: "fixed",
             right: 0,
@@ -101,8 +140,13 @@ export default function SidebarCart() {
             zIndex: 1300,
             padding: 16,
             overflowY: "auto",
+            transform: isOpen ? "translateX(0)" : "translateX(100%)",
+            opacity: isOpen ? 1 : 0,
+            transition: `transform ${ANIM_DURATION}ms ease, opacity ${ANIM_DURATION}ms ease`,
+            pointerEvents: isOpen ? "auto" : "none",
           }}
           aria-live="polite"
+          aria-hidden={!isOpen}
         >
           <div
             style={{
