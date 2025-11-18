@@ -13,6 +13,7 @@ import Register from "./pages/Register.jsx";
 import Login from "./pages/Login.jsx";
 import Usuario from "./pages/Usuario.jsx";
 import Orcamento from "./pages/Orcamento.jsx";
+import Pedido from "./pages/Pedido.jsx";
 
 const router = createBrowserRouter([
   {
@@ -25,11 +26,11 @@ const router = createBrowserRouter([
       { path: "/variedades", element: <Var /> },
       { path: "/view/:categoria/:id", element: <View /> },
       { path: "/admin", element: <GerenciarProdutos /> },
-      {path: "/register", element: <Register /> },
-      {path: "/login", element: <Login /> },
-      {path: "/usuario", element: <Usuario /> },
-      {path: "/orcamento", element: <Orcamento /> },
-
+      { path: "/register", element: <Register /> },
+      { path: "/login", element: <Login /> },
+      { path: "/usuario", element: <Usuario /> },
+      { path: "/orcamento", element: <Orcamento /> },
+      { path: "/pedido", element: <Pedido /> },
     ],
   },
 ]);

@@ -1,7 +1,7 @@
 import NavBar from "../components/navbar/NavBar";
 import OrderForm from "../components/form/OrderForm";
 
-export default function Orcamento() {
+export default function Pedido() {
   return (
     <>
       <NavBar initialGreen={true} />

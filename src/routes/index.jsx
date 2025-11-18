@@ -10,6 +10,7 @@ import Register from "../pages/Register.jsx";
 import Login from "../pages/Login.jsx";
 import Usuario from "../pages/Usuario.jsx";
 import Orcamento from "../pages/Orcamento.jsx";
+import Pedido from "../pages/Pedido.jsx";
 
 function AppRoutes() {
   return (
@@ -24,7 +25,7 @@ function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/usuario" element={<Usuario />} />
       <Route path="/orcamento" element={<Orcamento />} />
-
+      <Route path="/pedido" element={<Pedido />} />
     </Routes>
   );
 }
