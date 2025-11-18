@@ -3,15 +3,18 @@ import { useParams, useOutletContext } from "react-router-dom";
 import api from "../api";
 import NavBar from "../components/navbar/NavBar";
 import { FaCartPlus } from "react-icons/fa6";
+import Toast from "../components/messages/Toast"; // ✅ IMPORT DO TOAST
 
 export default function View() {
   const { categoria, id } = useParams();
   const [loading, setLoading] = useState(true);
-  const [produto, setProduto] = useState(null); // normalized display object
+  const [produto, setProduto] = useState(null);
   const [weights, setWeights] = useState([]);
   const [selectedWeight, setSelectedWeight] = useState(null);
   const [codigo, setCodigo] = useState(null);
   const [codigoLoading, setCodigoLoading] = useState(false);
+
+  const [toast, setToast] = useState(false); // ✅ ESTADO DO TOAST
 
   const outlet = useOutletContext?.() || {};
   const { addToCart } = outlet;
@@ -45,7 +48,7 @@ export default function View() {
           return digits ? Number(digits[0]) : s;
         };
 
-        // --- CEREAIS: produto (tabela produto) + variações em produto_ensacado
+        // CEREAIS
         if (cat === "cereais") {
           const resp = await api.get(`/produtos/${categoria}/${id}`);
           const prodRaw = normalize(resp?.data);
@@ -61,10 +64,12 @@ export default function View() {
               prodRaw?.Id_prod ??
               prodRaw?.Id ??
               prodRaw?.id ??
-              prodRaw?._id ??
               String(id),
             name:
-              prodRaw?.Nome_prod ?? prodRaw?.Nome ?? prodRaw?.nome ?? "Produto",
+              prodRaw?.Nome_prod ??
+              prodRaw?.Nome ??
+              prodRaw?.nome ??
+              "Produto",
             image: prodRaw?.Foto_prod ?? prodRaw?.Foto ?? prodRaw?.foto ?? null,
             description:
               prodRaw?.Descricao_prod ??
@@ -75,8 +80,8 @@ export default function View() {
           };
 
           setProduto(display);
-
           const prodId = display.prodId;
+
           try {
             const ensResp = await api.get(
               `/ensacados/produto/${encodeURIComponent(prodId)}`
@@ -100,7 +105,6 @@ export default function View() {
                   null;
                 return (
                   eProdId !== null &&
-                  eProdId !== undefined &&
                   String(eProdId) === String(prodId)
                 );
               });
@@ -108,7 +112,6 @@ export default function View() {
               matched = ensArr;
             }
 
-            // map + dedupe por peso (mantendo sua lógica)
             const mapped = (matched || []).map((e, idx) => {
               const idFallback =
                 e?.Id_ens ?? e?.Id ?? e?.id ?? e?._id ?? `${prodId}-ens-${idx}`;
@@ -123,7 +126,12 @@ export default function View() {
               const label =
                 pesoNum != null ? `${pesoNum} kg` : `Peso ${idx + 1}`;
               const price =
-                e?.Preco_ens ?? e?.Preco ?? e?.preco ?? e?.price ?? null;
+                e?.Preco_ens ??
+                e?.Preco ??
+                e?.preco ??
+                e?.price ??
+                null;
+
               return {
                 id: String(idFallback),
                 label,
@@ -157,7 +165,6 @@ export default function View() {
             setWeights(deduped);
             setSelectedWeight(deduped.length > 0 ? deduped[0] : null);
           } catch (e) {
-            console.warn("Erro ao buscar /ensacados/produto/:prodId", e);
             setWeights([]);
             setSelectedWeight(null);
           }
@@ -166,24 +173,18 @@ export default function View() {
           return;
         }
 
-        // --- RAÇÕES / VARIEDADES: buscar em outros_produtos e exibir peso numérico (campo Peso)
+        // RAÇÕES / VARIEDADES
         if (cat === "rações" || cat === "variedades") {
           let out = null;
+
           try {
             const respOut = await api.get(`/outros_produtos/${id}`);
             out = normalize(respOut?.data);
-          } catch (errOut) {
+          } catch {
             try {
-              const respFallback = await api.get(
-                `/produtos/${categoria}/${id}`
-              );
+              const respFallback = await api.get(`/produtos/${categoria}/${id}`);
               out = normalize(respFallback?.data);
-            } catch (errFallback) {
-              console.warn(
-                "Erro ao buscar outros_produtos (routes falharam)",
-                errOut,
-                errFallback
-              );
+            } catch {
               out = null;
             }
           }
@@ -200,15 +201,21 @@ export default function View() {
             name: out?.Nome_out ?? out?.Nome ?? out?.nome ?? "Produto",
             image: out?.Foto_out ?? out?.Foto ?? out?.foto ?? null,
             description:
-              out?.Descricao_out ?? out?.Descricao ?? out?.descricao ?? null,
+              out?.Descricao_out ??
+              out?.Descricao ??
+              out?.descricao ??
+              null,
             raw: out,
           };
 
           setProduto(displayOut);
 
-          // cria lista de peso a partir do campo Peso_out / Peso / peso
           const pesoValCandidate =
-            out?.Peso_out ?? out?.Peso ?? out?.peso ?? out?.peso_out ?? null;
+            out?.Peso_out ??
+            out?.Peso ??
+            out?.peso ??
+            out?.peso_out ??
+            null;
           const pesoNum = extractNumberFrom(pesoValCandidate);
 
           if (pesoNum !== null && pesoNum !== undefined && pesoNum !== "") {
@@ -223,7 +230,6 @@ export default function View() {
 
             const w = {
               id: `${displayOut.prodId}-peso-${String(pesoNum)}`,
-              // para rações/variedades mostramos só o número (sem 'kg')
               label: String(pesoNum),
               peso: pesoNum,
               price,
@@ -233,7 +239,6 @@ export default function View() {
             setWeights([w]);
             setSelectedWeight(w);
 
-            // também já setamos o código do registro de outros_produtos (Codigo_out / Codigo)
             const cod =
               out?.Codigo_out ??
               out?.Codigo ??
@@ -257,7 +262,7 @@ export default function View() {
           return;
         }
 
-        // --- fallback genérico
+        // fallback
         try {
           const resp = await api.get(`/produtos/${categoria}/${id}`);
           const fallbackProd = normalize(resp?.data);
@@ -266,6 +271,7 @@ export default function View() {
             setLoading(false);
             return;
           }
+
           setProduto({
             source: "produto",
             prodId:
@@ -290,14 +296,10 @@ export default function View() {
               null,
             raw: fallbackProd,
           });
-        } catch (err) {
-          console.error("Erro fallback /produtos/:categoria/:id", err);
-          setProduto(null);
         } finally {
           setLoading(false);
         }
-      } catch (err) {
-        console.error("Erro geral ao buscar produto:", err);
+      } catch {
         setProduto(null);
         setWeights([]);
         setSelectedWeight(null);
@@ -311,7 +313,7 @@ export default function View() {
   useEffect(() => {
     const fetchCodigoParaCereal = async () => {
       if (!produto) return;
-      if (produto.source !== "produto") return; // só para cereais
+      if (produto.source !== "produto") return;
       if (!selectedWeight) {
         setCodigo(null);
         return;
@@ -320,15 +322,14 @@ export default function View() {
       const prodId = produto.prodId;
       const peso = selectedWeight.peso;
 
-      console.log(`Requisitando código: prodId=${prodId}, peso=${peso}`); // Debug para verificar os valores
-
-      if (peso === null || peso === undefined || String(peso).trim() === "") {
+      if (peso === null || peso === undefined) {
         setCodigo(null);
         return;
       }
 
       setCodigoLoading(true);
       setCodigo(null);
+
       try {
         const resp = await api.get(
           `/ensacados/codigo?prodId=${encodeURIComponent(
@@ -336,12 +337,9 @@ export default function View() {
           )}&peso=${encodeURIComponent(peso)}`
         );
         const data = resp?.data ?? [];
-        console.log("API Response: ", data); // Log da resposta da API
-
-        const cod = data.length > 0 ? data[0].codigo : null; // Se houver algum código, use o primeiro
+        const cod = data.length > 0 ? data[0].codigo : null;
         setCodigo(cod ?? null);
-      } catch (err) {
-        console.warn("Erro ao buscar codigo do ensacado:", err);
+      } catch {
         setCodigo(null);
       } finally {
         setCodigoLoading(false);
@@ -356,21 +354,19 @@ export default function View() {
   if (!produto)
     return (
       <>
-        <NavBar
-          initialGreen={true}
-          {...(typeof addToCart === "function" ? { addToCart } : {})}
-        />
+        <NavBar initialGreen={true} {...(typeof addToCart === "function" ? { addToCart } : {})} />
         <div className="min-h-screen flex items-center justify-center p-4">
           <div className="bg-white shadow rounded p-6 max-w-lg text-center">
-            <h2 className="text-xl font-semibold mb-2">
-              Produto não encontrado
-            </h2>
+            <h2 className="text-xl font-semibold mb-2">Produto não encontrado</h2>
             <p className="text-sm text-gray-600">Verifique categoria e id.</p>
           </div>
         </div>
       </>
     );
 
+  // --------------------------
+  //  ADICIONAR AO CARRINHO
+  // --------------------------
   const handleAdd = () => {
     const prodId = produto?.prodId ?? id;
     const nomeprod = produto?.name ?? "Produto";
@@ -388,6 +384,7 @@ export default function View() {
       selectedWeight?.peso ??
       selectedWeight?.label ??
       "noWeight";
+
     const composedId = `${prodId}-${weightKey}`;
 
     const cartItem = {
@@ -411,21 +408,29 @@ export default function View() {
     try {
       const raw = localStorage.getItem("cart_v1");
       const cart = raw ? JSON.parse(raw) : [];
+
       const idx = cart.findIndex((it) => it.id === cartItem.id);
-      if (idx >= 0)
+
+      if (idx >= 0) {
         cart[idx].quantity =
-          (Number(cart[idx].quantity) || 0) + (Number(cartItem.quantity) || 1);
-      else cart.push(cartItem);
+          (Number(cart[idx].quantity) || 0) +
+          (Number(cartItem.quantity) || 1);
+      } else {
+        cart.push(cartItem);
+      }
+
       localStorage.setItem("cart_v1", JSON.stringify(cart));
       window.dispatchEvent(new Event("cart_v1:updated"));
-      console.log(
-        "cart_v1 (after add):",
-        JSON.parse(localStorage.getItem("cart_v1"))
-      );
-      alert("Produto adicionado ao carrinho");
+
+      // ------- TOAST NO LUGAR DO ALERT -------
+      setToast(true);
+      setTimeout(() => setToast(false), 2000);
+
     } catch (e) {
       console.error("Erro ao adicionar ao carrinho:", e);
-      alert("Erro ao adicionar ao carrinho");
+
+      setToast(true);
+      setTimeout(() => setToast(false), 2000);
     }
   };
 
@@ -435,6 +440,7 @@ export default function View() {
         initialGreen={true}
         {...(typeof addToCart === "function" ? { addToCart } : {})}
       />
+
       <div className="min-h-screen flex items-start md:items-center justify-center bg-gray-100 p-4 pt-20 md:pt-0">
         <div className="bg-white shadow-lg rounded-2xl p-6 md:p-8 w-full max-w-4xl mt-6 md:mt-25 md:min-h-[520px]">
           <div className="flex flex-col md:flex-row gap-6 items-stretch">
@@ -457,20 +463,23 @@ export default function View() {
                 {produto.name}
               </h2>
 
+              {/* PESOS */}
               <div className="mb-4">
                 <h3 className="font-semibold text-gray-700 mb-2">Pesos</h3>
 
                 {weights.length === 0 ? (
                   <p className="text-gray-500 mt-2">
-                    Opções de peso não informadas no banco.
+                    Opções de peso não informadas.
                   </p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {weights.map((w, index) => {
                       const active =
                         selectedWeight && selectedWeight.id === w.id;
+
                       const key =
                         w.id ?? `${produto?.prodId ?? id}-peso-${index}`;
+
                       return (
                         <button
                           key={key}
@@ -481,11 +490,8 @@ export default function View() {
                               ? "bg-green-700 text-white border-green-700"
                               : "bg-gray-100 text-gray-700 border-gray-300 hover:border-green-500"
                           }`}
-                          aria-pressed={active}
                         >
-                          <div className="text-center">
-                            <div className="font-bold text-sm">{w.label}</div>
-                          </div>
+                          <div className="font-bold text-sm">{w.label}</div>
                         </button>
                       );
                     })}
@@ -493,7 +499,7 @@ export default function View() {
                 )}
               </div>
 
-              {/* Código (único lugar que atualiza conforme seleção) */}
+              {/* CÓDIGO */}
               <div className="mb-4">
                 <h3 className="font-semibold text-gray-700 mb-2">Código</h3>
                 <div className="text-lg font-mono">
@@ -535,6 +541,9 @@ export default function View() {
           </div>
         </div>
       </div>
+
+      {/* TOAST AQUI 😍 */}
+      <Toast message="Produto adicionado ao carrinho" show={toast} />
     </>
   );
 }

@@ -1,19 +1,17 @@
 // src/components/cart/SidebarCart.jsx
 import React, { useEffect, useState, useRef } from "react";
 import SidebarProducts from "./SidebarProducts";
+import { IoSend, IoClose } from "react-icons/io5";
 
 export default function SidebarCart() {
   const [cart, setCart] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
 
-  // novo: controla montagem do drawer para permitir animação de saída
   const [mounted, setMounted] = useState(false);
-  const ANIM_DURATION = 300; // ms
+  const ANIM_DURATION = 300;
 
-  // ref para detectar clique fora
   const asideRef = useRef(null);
 
-  // verifica se já existe uma instância ativa (guard)
   const [isActive] = useState(() => {
     if (typeof window === "undefined") return true;
     if (window.__SIDEBAR_CART_MOUNTED) {
@@ -23,7 +21,6 @@ export default function SidebarCart() {
     return true;
   });
 
-  // limpa flag quando desmonta (apenas se era ativa)
   useEffect(() => {
     return () => {
       if (isActive && typeof window !== "undefined") {
@@ -32,7 +29,6 @@ export default function SidebarCart() {
     };
   }, [isActive]);
 
-  // helpers para carregar / salvar
   const loadCart = () => {
     try {
       const raw = localStorage.getItem("cart_v1");
@@ -51,7 +47,6 @@ export default function SidebarCart() {
     } catch {}
   };
 
-  // se não for instância ativa, não registra listeners e não renderiza o drawer
   useEffect(() => {
     if (!isActive) return;
 
@@ -61,13 +56,10 @@ export default function SidebarCart() {
       if (e.key === "cart_v1") loadCart();
     };
     const handlerUpdated = () => loadCart();
-    // atualiza: monta antes de abrir para permitir animação de entrada
+
     const handlerOpen = () => {
       setMounted(true);
-      // aguarda próximo tick para que o aside seja renderizado no estado "fechado"
-      // e então dispare a transição para o estado "aberto"
       const t = setTimeout(() => setIsOpen(true), 10);
-      // limpa caso o componente seja desmontado rapidamente
       return () => clearTimeout(t);
     };
 
@@ -82,15 +74,13 @@ export default function SidebarCart() {
     };
   }, [isActive]);
 
-  // quando isOpen for false, aguarda animação e desmonta
   useEffect(() => {
     if (!mounted) return;
-    if (isOpen) return; // quando aberto, nada a fazer
+    if (isOpen) return;
     const t = setTimeout(() => setMounted(false), ANIM_DURATION);
     return () => clearTimeout(t);
   }, [isOpen, mounted]);
 
-  // listener para fechar ao clicar fora do aside
   useEffect(() => {
     if (!isActive || !isOpen) return;
 
@@ -117,10 +107,8 @@ export default function SidebarCart() {
 
   const clearCart = () => {
     saveCart([]);
-    setIsOpen(false);
   };
 
-  // se não for a instância ativa, não renderiza nada
   if (!isActive) return null;
 
   return (
@@ -128,7 +116,6 @@ export default function SidebarCart() {
       {mounted && (
         <aside
           ref={asideRef}
-          // animação de entrada/saída via transform + opacity
           style={{
             position: "fixed",
             right: 0,
@@ -148,47 +135,38 @@ export default function SidebarCart() {
           aria-live="polite"
           aria-hidden={!isOpen}
         >
+          {/* TOPO */}
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              paddingBottom: 8,
             }}
           >
             <h3 style={{ margin: 0 }}>Seu carrinho</h3>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button
-                onClick={() => {
-                  clearCart();
-                }}
-                title="Limpar carrinho"
-                style={{
-                  background: "transparent",
-                  border: "1px solid #ddd",
-                  padding: "6px 8px",
-                  borderRadius: 6,
-                  cursor: "pointer",
-                }}
-              >
-                Limpar
-              </button>
-              <button
-                onClick={() => setIsOpen(false)}
-                title="Fechar"
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  fontSize: 16,
-                  cursor: "pointer",
-                }}
-              >
-                ✕
-              </button>
-            </div>
+
+            {/* botão fechar */}
+            <button
+              onClick={() => setIsOpen(false)}
+              title="Fechar"
+              style={{
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <IoClose size={26} />
+            </button>
           </div>
 
-          <div style={{ marginTop: 12 }}>
-            {cart.length === 0 && <p>Seu carrinho está vazio.</p>}
+          {/* LISTA */}
+          <div style={{ marginTop: 12, paddingBottom: 90 }}>
+            {cart.length === 0 && (
+              <p className="text-gray-500 text-sm">Seu carrinho está vazio.</p>
+            )}
 
             {cart.map((it) => (
               <SidebarProducts
@@ -200,24 +178,59 @@ export default function SidebarCart() {
             ))}
           </div>
 
+          {/* RODAPÉ FIXO */}
           {cart.length > 0 && (
-            <div style={{ marginTop: 18 }}>
+            <div
+              style={{
+                position: "fixed",
+                bottom: 0,
+                right: 0,
+                width: 360,
+                background: "#fff",
+                padding: "12px 16px",
+                boxShadow: "0 -6px 14px rgba(0,0,0,0.09)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+              }}
+            >
+              {/* ENVIAR PEDIDO */}
               <button
-                onClick={() => {
-                  alert("Enviar pedido - implemente fluxo de checkout");
-                }}
+                onClick={() => alert("Enviar pedido - implemente fluxo")}
                 style={{
                   background: "#116530",
                   color: "#fff",
                   width: "100%",
-                  padding: "10px 14px",
+                  padding: "8px 12px",
                   borderRadius: 6,
                   border: "none",
                   cursor: "pointer",
-                  marginBottom: 8,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: 6,
+                  fontSize: 14,
                 }}
               >
-                Enviar Pedido ►
+                Enviar Pedido
+                <IoSend size={15} />
+              </button>
+
+              {/* ESVAZIAR */}
+              <button
+                onClick={clearCart}
+                style={{
+                  background: "#c41d1d",
+                  color: "#fff",
+                  width: "100%",
+                  padding: "8px 12px",
+                  borderRadius: 6,
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: 14,
+                }}
+              >
+                Esvaziar o carrinho
               </button>
             </div>
           )}
