@@ -7,8 +7,6 @@ import AbPrevSection from "../components/aboutpreview/AbPrevSection.jsx";
 import HowItWorks from "../components/howworks/HowItWorks.jsx";
 import HeaderMobile from "../components/header/HeaderMobile.jsx"; // Crie este componente para mobile
 
-
-
 export default function Home() {
   return (
     <>
@@ -22,7 +20,6 @@ export default function Home() {
       <PreviewSection />
       <AbPrevSection />
       <HowItWorks />
-      
     </>
   );
 }
