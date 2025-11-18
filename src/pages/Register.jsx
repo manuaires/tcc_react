@@ -5,10 +5,12 @@ import api from "../api";
 import { jwtDecode } from "jwt-decode";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import { IoEye, IoEyeOff } from "react-icons/io5";
 
 export default function Register() {
   const [formData, setFormData] = useState({});
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [pwdChecks, setPwdChecks] = useState({
     upper: false,
     lower: false,
@@ -159,20 +161,29 @@ export default function Register() {
             <div>
               <label className="block text-gray-700 mb-1">Senha</label>
 
-              <input
-                type="password"
-                name="senha"
-                value={formData.senha}
-                onChange={handlePasswordChange}
-                onFocus={() => setPwdFocused(true)}
-                onBlur={() => setPwdFocused(false)}
-                required
-                minLength={8}
-                pattern="^(?=.*[a-z])(?=.*[A-Z]).{8,}$"
-                title="A senha deve ter no mínimo 8 caracteres, incluindo pelo menos 1 letra maiúscula e 1 letra minúscula."
-                placeholder="Crie uma senha forte..."
-                className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-400 outline-none"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="senha"
+                  value={formData.senha}
+                  onChange={handlePasswordChange}
+                  onFocus={() => setPwdFocused(true)}
+                  onBlur={() => setPwdFocused(false)}
+                  required
+                  minLength={8}
+                  pattern="^(?=.*[a-z])(?=.*[A-Z]).{8,}$"
+                  title="A senha deve ter no mínimo 8 caracteres, incluindo pelo menos 1 letra maiúscula e 1 letra minúscula."
+                  placeholder="Crie uma senha forte..."
+                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-400 outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800"
+                >
+                  {showPassword ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                </button>
+              </div>
 
               {showPwdChecklist && (
                 <div className="mt-3 p-3 border rounded-lg bg-gray-50">

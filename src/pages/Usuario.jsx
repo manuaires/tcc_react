@@ -7,6 +7,7 @@ import { jwtDecode } from "jwt-decode";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import Toast from "../components/messages/Toast";
+import { IoEye, IoEyeOff } from "react-icons/io5";
 
 export default function Usuario() {
   const [formData, setFormData] = useState(null);
@@ -22,6 +23,7 @@ export default function Usuario() {
     minLen: false,
   });
   const [pwdFocused, setPwdFocused] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -326,16 +328,25 @@ export default function Usuario() {
                       Nova Senha (opcional)
                     </label>
 
-                    <input
-                      type="password"
-                      name="senha"
-                      value={formData.senha ?? ""}
-                      onChange={handlePasswordChange}
-                      onFocus={() => setPwdFocused(true)}
-                      onBlur={() => setPwdFocused(false)}
-                      placeholder="Deixe em branco para manter"
-                      className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-400 outline-none"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        name="senha"
+                        value={formData.senha ?? ""}
+                        onChange={handlePasswordChange}
+                        onFocus={() => setPwdFocused(true)}
+                        onBlur={() => setPwdFocused(false)}
+                        placeholder="Deixe em branco para manter"
+                        className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-400 outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800"
+                      >
+                        {showPassword ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                      </button>
+                    </div>
 
                     {showPwdChecklist && (
                       <div className="mt-3 p-3 border rounded-lg bg-gray-50">
