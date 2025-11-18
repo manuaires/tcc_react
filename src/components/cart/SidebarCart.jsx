@@ -2,8 +2,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import SidebarProducts from "./SidebarProducts";
 import { IoSend, IoClose } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 
 export default function SidebarCart() {
+  const navigate = useNavigate();
   const [cart, setCart] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -196,7 +198,14 @@ export default function SidebarCart() {
             >
               {/* ENVIAR PEDIDO */}
               <button
-                onClick={() => alert("Enviar pedido - implemente fluxo")}
+                onClick={() => {
+                  // fecha o sidebar e navega para /pedido passando os itens do carrinho no state
+                  setIsOpen(false);
+                  // opcional: aguardar a animação de fechamento (300ms) para evitar flash visual
+                  setTimeout(() => {
+                    navigate("/pedido", { state: { items: cart } });
+                  }, 300);
+                }}
                 style={{
                   background: "#116530",
                   color: "#fff",
