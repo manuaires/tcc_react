@@ -43,7 +43,7 @@ export default function QualitiesSection() {
             }
             texto={
               <span className="text-gray-600 text-sm">
-               Construímos confiança e valorizamos cada cliente.
+               Construímos confiança e valorizamos cada cliente com dedicação e parceria.
               </span>
             }
           />

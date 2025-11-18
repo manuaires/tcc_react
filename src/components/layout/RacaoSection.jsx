@@ -33,8 +33,8 @@ export default function RacaoSection() {
 
   return (
     <section className="py-15 flex flex-col justify-center items-center w-full gap-8">
-      <div className="flex flex-col items-center gap-4">
-        <div className="relative w-80">
+     <div className="flex justify-center w-full px-4">
+        <div className="relative w-full max-w-[500px]">
           <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
             <FaSearch className="text-green-700 w-5 h-5" />
           </span>
@@ -43,11 +43,10 @@ export default function RacaoSection() {
             placeholder="Buscar ração..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border border-gray-300 rounded-2xl px-4 py-2 pl-10 w-full focus:outline-none focus:ring-2 focus:ring-green-600"
+            className="border border-gray-300 rounded-2xl mb-2 py-2 pl-10 w-full focus:outline-none focus:ring-2 focus:ring-green-600"
           />
         </div>
       </div>
-
       <ProdSection produtos={produtosFiltrados} categoria="rações" />
     </section>
   );

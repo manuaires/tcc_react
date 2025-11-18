@@ -73,7 +73,7 @@ export default function PreviewSection() {
                 : "border-transparent"
             } hover:border-green-700 transition`}
           >
-            Variedades
+            Variedades  
           </button>
         </div>
         <div className="flex flex-wrap justify-center gap-6">
