@@ -35,11 +35,13 @@ export default function SidebarProducts({ item, onRemove, onUpdateQty }) {
       </div>
 
       <div className="flex items-center">
-        <img
-          src={item?.imagem || "src/assets/produtos/image.png"}
-          alt={item?.nomeprod || "produto"}
-          className="h-16"
-        />
+        <div className="w-16 h-16 flex items-center justify-center overflow-hidden rounded">
+          <img
+            src={item?.imagem || "src/assets/produtos/image.png"}
+            alt={item?.nomeprod || "produto"}
+            className="w-full h-full object-cover"
+          />
+        </div>
       </div>
     </div>
   );

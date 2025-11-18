@@ -65,8 +65,7 @@ export default function View() {
               String(id),
             name:
               prodRaw?.Nome_prod ?? prodRaw?.Nome ?? prodRaw?.nome ?? "Produto",
-            image:
-              prodRaw?.Foto_prod ?? prodRaw?.Foto ?? prodRaw?.foto ?? null,
+            image: prodRaw?.Foto_prod ?? prodRaw?.Foto ?? prodRaw?.foto ?? null,
             description:
               prodRaw?.Descricao_prod ??
               prodRaw?.Descricao ??
@@ -94,7 +93,11 @@ export default function View() {
             if (hasIdProdField) {
               matched = ensArr.filter((e) => {
                 const eProdId =
-                  e?.Id_prod ?? e?.id_prod ?? e?.IdProd ?? e?.produto_id ?? null;
+                  e?.Id_prod ??
+                  e?.id_prod ??
+                  e?.IdProd ??
+                  e?.produto_id ??
+                  null;
                 return (
                   eProdId !== null &&
                   eProdId !== undefined &&
@@ -117,7 +120,8 @@ export default function View() {
                 e?.peso_kg ??
                 null;
               const pesoNum = extractNumberFrom(pesoVal);
-              const label = pesoNum != null ? `${pesoNum} kg` : `Peso ${idx + 1}`;
+              const label =
+                pesoNum != null ? `${pesoNum} kg` : `Peso ${idx + 1}`;
               const price =
                 e?.Preco_ens ?? e?.Preco ?? e?.preco ?? e?.price ?? null;
               return {
@@ -135,7 +139,10 @@ export default function View() {
               if (!byPeso.has(key)) byPeso.set(key, m);
               else {
                 const existing = byPeso.get(key);
-                if ((existing.price == null || existing.price === "") && m.price != null) {
+                if (
+                  (existing.price == null || existing.price === "") &&
+                  m.price != null
+                ) {
                   byPeso.set(key, m);
                 }
               }
@@ -167,10 +174,16 @@ export default function View() {
             out = normalize(respOut?.data);
           } catch (errOut) {
             try {
-              const respFallback = await api.get(`/produtos/${categoria}/${id}`);
+              const respFallback = await api.get(
+                `/produtos/${categoria}/${id}`
+              );
               out = normalize(respFallback?.data);
             } catch (errFallback) {
-              console.warn("Erro ao buscar outros_produtos (routes falharam)", errOut, errFallback);
+              console.warn(
+                "Erro ao buscar outros_produtos (routes falharam)",
+                errOut,
+                errFallback
+              );
               out = null;
             }
           }
@@ -232,7 +245,11 @@ export default function View() {
             setWeights([]);
             setSelectedWeight(null);
             setCodigo(
-              out?.Codigo_out ?? out?.Codigo ?? out?.CodigoOut ?? out?.Codigo_outo ?? null
+              out?.Codigo_out ??
+                out?.Codigo ??
+                out?.CodigoOut ??
+                out?.Codigo_outo ??
+                null
             );
           }
 
@@ -252,14 +269,20 @@ export default function View() {
           setProduto({
             source: "produto",
             prodId:
-              fallbackProd?.Id_prod ?? fallbackProd?.Id ?? fallbackProd?.id ?? String(id),
+              fallbackProd?.Id_prod ??
+              fallbackProd?.Id ??
+              fallbackProd?.id ??
+              String(id),
             name:
               fallbackProd?.Nome_prod ??
               fallbackProd?.Nome ??
               fallbackProd?.nome ??
               "Produto",
             image:
-              fallbackProd?.Foto_prod ?? fallbackProd?.Foto ?? fallbackProd?.foto ?? null,
+              fallbackProd?.Foto_prod ??
+              fallbackProd?.Foto ??
+              fallbackProd?.foto ??
+              null,
             description:
               fallbackProd?.Descricao_prod ??
               fallbackProd?.Descricao ??
@@ -285,59 +308,63 @@ export default function View() {
     fetchData();
   }, [categoria, id]);
 
- useEffect(() => {
-  const fetchCodigoParaCereal = async () => {
-    if (!produto) return;
-    if (produto.source !== "produto") return; // só para cereais
-    if (!selectedWeight) {
+  useEffect(() => {
+    const fetchCodigoParaCereal = async () => {
+      if (!produto) return;
+      if (produto.source !== "produto") return; // só para cereais
+      if (!selectedWeight) {
+        setCodigo(null);
+        return;
+      }
+
+      const prodId = produto.prodId;
+      const peso = selectedWeight.peso;
+
+      console.log(`Requisitando código: prodId=${prodId}, peso=${peso}`); // Debug para verificar os valores
+
+      if (peso === null || peso === undefined || String(peso).trim() === "") {
+        setCodigo(null);
+        return;
+      }
+
+      setCodigoLoading(true);
       setCodigo(null);
-      return;
-    }
+      try {
+        const resp = await api.get(
+          `/ensacados/codigo?prodId=${encodeURIComponent(
+            prodId
+          )}&peso=${encodeURIComponent(peso)}`
+        );
+        const data = resp?.data ?? [];
+        console.log("API Response: ", data); // Log da resposta da API
 
-    const prodId = produto.prodId;
-    const peso = selectedWeight.peso;
+        const cod = data.length > 0 ? data[0].codigo : null; // Se houver algum código, use o primeiro
+        setCodigo(cod ?? null);
+      } catch (err) {
+        console.warn("Erro ao buscar codigo do ensacado:", err);
+        setCodigo(null);
+      } finally {
+        setCodigoLoading(false);
+      }
+    };
 
-    console.log(`Requisitando código: prodId=${prodId}, peso=${peso}`);  // Debug para verificar os valores
-
-    if (peso === null || peso === undefined || String(peso).trim() === "") {
-      setCodigo(null);
-      return;
-    }
-
-    setCodigoLoading(true);
-    setCodigo(null);
-    try {
-      const resp = await api.get(
-        `/ensacados/codigo?prodId=${encodeURIComponent(prodId)}&peso=${encodeURIComponent(peso)}`
-      );
-      const data = resp?.data ?? [];
-      console.log("API Response: ", data);  // Log da resposta da API
-
-      const cod =
-        data.length > 0 ? data[0].codigo : null;  // Se houver algum código, use o primeiro
-      setCodigo(cod ?? null);
-    } catch (err) {
-      console.warn("Erro ao buscar codigo do ensacado:", err);
-      setCodigo(null);
-    } finally {
-      setCodigoLoading(false);
-    }
-  };
-
-  fetchCodigoParaCereal();
-}, [produto, selectedWeight]);
-
-
+    fetchCodigoParaCereal();
+  }, [produto, selectedWeight]);
 
   if (loading) return <p className="p-4">Carregando produto...</p>;
 
   if (!produto)
     return (
       <>
-        <NavBar initialGreen={true} {...(typeof addToCart === "function" ? { addToCart } : {})} />
+        <NavBar
+          initialGreen={true}
+          {...(typeof addToCart === "function" ? { addToCart } : {})}
+        />
         <div className="min-h-screen flex items-center justify-center p-4">
           <div className="bg-white shadow rounded p-6 max-w-lg text-center">
-            <h2 className="text-xl font-semibold mb-2">Produto não encontrado</h2>
+            <h2 className="text-xl font-semibold mb-2">
+              Produto não encontrado
+            </h2>
             <p className="text-sm text-gray-600">Verifique categoria e id.</p>
           </div>
         </div>
@@ -357,7 +384,10 @@ export default function View() {
       0;
 
     const weightKey =
-      selectedWeight?.id ?? selectedWeight?.peso ?? selectedWeight?.label ?? "noWeight";
+      selectedWeight?.id ??
+      selectedWeight?.peso ??
+      selectedWeight?.label ??
+      "noWeight";
     const composedId = `${prodId}-${weightKey}`;
 
     const cartItem = {
@@ -367,7 +397,14 @@ export default function View() {
       imagem: imagem ? `/produtos/${imagem}` : null,
       price,
       quantity: 1,
-      weight: selectedWeight ? { id: selectedWeight.id, label: selectedWeight.label, price: selectedWeight.price, peso: selectedWeight.peso } : null,
+      weight: selectedWeight
+        ? {
+            id: selectedWeight.id,
+            label: selectedWeight.label,
+            price: selectedWeight.price,
+            peso: selectedWeight.peso,
+          }
+        : null,
       rawProduto: produto.raw,
     };
 
@@ -375,11 +412,16 @@ export default function View() {
       const raw = localStorage.getItem("cart_v1");
       const cart = raw ? JSON.parse(raw) : [];
       const idx = cart.findIndex((it) => it.id === cartItem.id);
-      if (idx >= 0) cart[idx].quantity = (Number(cart[idx].quantity) || 0) + (Number(cartItem.quantity) || 1);
+      if (idx >= 0)
+        cart[idx].quantity =
+          (Number(cart[idx].quantity) || 0) + (Number(cartItem.quantity) || 1);
       else cart.push(cartItem);
       localStorage.setItem("cart_v1", JSON.stringify(cart));
       window.dispatchEvent(new Event("cart_v1:updated"));
-      console.log("cart_v1 (after add):", JSON.parse(localStorage.getItem("cart_v1")));
+      console.log(
+        "cart_v1 (after add):",
+        JSON.parse(localStorage.getItem("cart_v1"))
+      );
       alert("Produto adicionado ao carrinho");
     } catch (e) {
       console.error("Erro ao adicionar ao carrinho:", e);
@@ -389,37 +431,56 @@ export default function View() {
 
   return (
     <>
-      <NavBar initialGreen={true} {...(typeof addToCart === "function" ? { addToCart } : {})} />
+      <NavBar
+        initialGreen={true}
+        {...(typeof addToCart === "function" ? { addToCart } : {})}
+      />
       <div className="min-h-screen flex items-start md:items-center justify-center bg-gray-100 p-4 pt-20 md:pt-0">
-        <div className="bg-white shadow-lg rounded-2xl p-6 md:p-8 w-full max-w-4xl mt-6 md:mt-25">
-          <div className="flex flex-col md:flex-row gap-6">
+        <div className="bg-white shadow-lg rounded-2xl p-6 md:p-8 w-full max-w-4xl mt-6 md:mt-25 md:min-h-[520px]">
+          <div className="flex flex-col md:flex-row gap-6 items-stretch">
             {produto.image ? (
-              <div className="w-full md:w-1/2 flex items-center justify-center overflow-hidden rounded-md border border-gray-300">
-                <img src={`/produtos/${produto.image}`} alt={produto.name} className="object-cover w-full h-auto max-h-[480px] rounded" />
+              <div className="w-full md:w-1/2 flex items-center justify-center overflow-hidden rounded-md border border-gray-300 h-full min-h-0">
+                <img
+                  src={`/produtos/${produto.image}`}
+                  alt={produto.name}
+                  className="object-cover w-full h-full rounded"
+                />
               </div>
             ) : (
-              <div className="w-full md:w-1/2 flex items-center justify-center italic text-gray-500 mb-4">Sem imagem</div>
+              <div className="w-full md:w-1/2 flex items-center justify-center italic text-gray-500 mb-4 h-full min-h-0">
+                Sem imagem
+              </div>
             )}
 
-            <div className="w-full md:w-1/2 flex flex-col justify-start">
-              <h2 className="text-2xl font-bold text-green-700 mb-4">{produto.name}</h2>
+            <div className="w-full md:w-1/2 flex flex-col justify-start h-full min-h-0 overflow-hidden">
+              <h2 className="text-2xl font-bold text-green-700 mb-4">
+                {produto.name}
+              </h2>
 
               <div className="mb-4">
                 <h3 className="font-semibold text-gray-700 mb-2">Pesos</h3>
 
                 {weights.length === 0 ? (
-                  <p className="text-gray-500 mt-2">Opções de peso não informadas no banco.</p>
+                  <p className="text-gray-500 mt-2">
+                    Opções de peso não informadas no banco.
+                  </p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {weights.map((w, index) => {
-                      const active = selectedWeight && selectedWeight.id === w.id;
-                      const key = w.id ?? `${produto?.prodId ?? id}-peso-${index}`;
+                      const active =
+                        selectedWeight && selectedWeight.id === w.id;
+                      const key =
+                        w.id ?? `${produto?.prodId ?? id}-peso-${index}`;
                       return (
                         <button
                           key={key}
                           type="button"
                           onClick={() => setSelectedWeight(w)}
-                          className={`min-w-[48px] px-2 h-10 flex items-center justify-center rounded-md border text-sm select-none ${active ? "bg-green-700 text-white border-green-700" : "bg-gray-100 text-gray-700 border-gray-300 hover:border-green-500"}`}
+                          className={`w-20 md:w-28 h-10 md:h-12 flex items-center justify-center rounded-md border text-sm select-none ${
+                            active
+                              ? "bg-green-700 text-white border-green-700"
+                              : "bg-gray-100 text-gray-700 border-gray-300 hover:border-green-500"
+                          }`}
                           aria-pressed={active}
                         >
                           <div className="text-center">
@@ -446,10 +507,17 @@ export default function View() {
                 </div>
               </div>
 
-              <p className="text-sm mb-4"><strong>Entre em contato para consultar preços!</strong></p>
+              <p className="text-sm mb-4">
+                <strong>Entre em contato para consultar preços!</strong>
+              </p>
 
               <div className="mt-auto">
-                <button type="button" aria-label="Adicionar ao carrinho" onClick={handleAdd} className="bg-green-700 w-full h-10 hover:bg-green-800 text-sm text-white rounded-sm flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  aria-label="Adicionar ao carrinho"
+                  onClick={handleAdd}
+                  className="bg-green-700 w-full h-10 hover:bg-green-800 text-sm text-white rounded-sm flex items-center justify-center gap-2"
+                >
                   Adicionar ao carrinho
                   <FaCartPlus size={16} className="inline-block" />
                 </button>
@@ -458,7 +526,9 @@ export default function View() {
               <hr className="my-4 text-gray-300" />
 
               <div>
-                <p><strong>Descrição:</strong></p>
+                <p>
+                  <strong>Descrição:</strong>
+                </p>
                 <p>{produto.description ?? "Sem descrição disponível."}</p>
               </div>
             </div>
