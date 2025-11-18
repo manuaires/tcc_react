@@ -3,21 +3,65 @@ import { useParams, useOutletContext } from "react-router-dom";
 import api from "../api";
 import NavBar from "../components/navbar/NavBar";
 import { FaCartPlus } from "react-icons/fa6";
-import Toast from "../components/messages/Toast"; // ✅ IMPORT DO TOAST
+import Toast from "../components/messages/Toast";
 
 export default function View() {
   const { categoria, id } = useParams();
   const [loading, setLoading] = useState(true);
   const [produto, setProduto] = useState(null);
+
+  // pesos (cada item terá agora btnId: 1..n, pesoValue, pesoUnit)
   const [weights, setWeights] = useState([]);
   const [selectedWeight, setSelectedWeight] = useState(null);
+  const [selectedBtnId, setSelectedBtnId] = useState(null);
+
+  // lista completa de códigos retornada pela API (com parsedPeso)
+  const [codigosList, setCodigosList] = useState([]);
   const [codigo, setCodigo] = useState(null);
   const [codigoLoading, setCodigoLoading] = useState(false);
 
-  const [toast, setToast] = useState(false); // ✅ ESTADO DO TOAST
+  const [toast, setToast] = useState(false);
 
   const outlet = useOutletContext?.() || {};
   const { addToCart } = outlet;
+
+  // --- helpers de peso/unidade ---
+  const normalizePesoString = (s) => {
+    if (s == null) return "";
+    return String(s).trim();
+  };
+
+  // Extrai número e unidade de uma string (ex: "25 kg", "500ml", "6", "25,5kg")
+  const parsePeso = (raw, fallbackName) => {
+    // tenta a própria raw
+    let s = raw == null ? "" : String(raw).trim();
+
+    // se raw vazio, tenta extrair da fallbackName (ex.: nome do produto contém "500ml")
+    if ((!s || s === "") && fallbackName) {
+      s = String(fallbackName).trim();
+    }
+
+    if (!s) return { value: null, unit: null, raw: raw };
+
+    // procura padrões como "500ml", "25 kg", "6kg", "6 kg x12" etc
+    const m = s.match(
+      /(\d+[.,]?\d*)\s*(kg|g|mg|ml|l|lt|ltrs|un|cx|pack|g\b|kg\b|ml\b|mg\b)/i
+    );
+    if (m) {
+      const num = parseFloat(m[1].replace(",", "."));
+      const unit = String(m[2]).toLowerCase();
+      return { value: Number.isFinite(num) ? num : null, unit, raw: raw };
+    }
+
+    // se não encontrou unidade explícita, tenta extrair apenas número
+    const n = s.replace(/[^0-9,\.]/g, "").replace(",", ".");
+    if (n) {
+      const parsed = parseFloat(n);
+      if (!Number.isNaN(parsed)) return { value: parsed, unit: null, raw: raw };
+    }
+
+    return { value: null, unit: null, raw: raw };
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,7 +69,9 @@ export default function View() {
       setProduto(null);
       setWeights([]);
       setSelectedWeight(null);
+      setSelectedBtnId(null);
       setCodigo(null);
+      setCodigosList([]);
       setCodigoLoading(false);
 
       try {
@@ -34,18 +80,6 @@ export default function View() {
         const normalize = (data) => {
           if (Array.isArray(data)) return data.length > 0 ? data[0] : null;
           return data ?? null;
-        };
-
-        const extractNumberFrom = (v) => {
-          if (v === null || v === undefined) return null;
-          const s = String(v);
-          const numeric = s.replace(/[^\d.,]/g, "").replace(",", ".");
-          const parsed = parseFloat(numeric);
-          if (!Number.isNaN(parsed)) {
-            return Number.isInteger(parsed) ? parsed : parsed;
-          }
-          const digits = s.match(/\d+/);
-          return digits ? Number(digits[0]) : s;
         };
 
         // CEREAIS
@@ -61,15 +95,9 @@ export default function View() {
           const display = {
             source: "produto",
             prodId:
-              prodRaw?.Id_prod ??
-              prodRaw?.Id ??
-              prodRaw?.id ??
-              String(id),
+              prodRaw?.Id_prod ?? prodRaw?.Id ?? prodRaw?.id ?? String(id),
             name:
-              prodRaw?.Nome_prod ??
-              prodRaw?.Nome ??
-              prodRaw?.nome ??
-              "Produto",
+              prodRaw?.Nome_prod ?? prodRaw?.Nome ?? prodRaw?.nome ?? "Produto",
             image: prodRaw?.Foto_prod ?? prodRaw?.Foto ?? prodRaw?.foto ?? null,
             description:
               prodRaw?.Descricao_prod ??
@@ -103,10 +131,7 @@ export default function View() {
                   e?.IdProd ??
                   e?.produto_id ??
                   null;
-                return (
-                  eProdId !== null &&
-                  String(eProdId) === String(prodId)
-                );
+                return eProdId !== null && String(eProdId) === String(prodId);
               });
             } else {
               matched = ensArr;
@@ -122,20 +147,27 @@ export default function View() {
                 e?.peso_ens ??
                 e?.peso_kg ??
                 null;
-              const pesoNum = extractNumberFrom(pesoVal);
+
+              const parsed = parsePeso(pesoVal, e?.Nome_ens ?? display.name);
+
+              const pesoNum = parsed.value;
+              const pesoUnit = parsed.unit;
+
               const label =
-                pesoNum != null ? `${pesoNum} kg` : `Peso ${idx + 1}`;
+                pesoNum != null
+                  ? pesoUnit
+                    ? `${pesoNum} ${pesoUnit}`
+                    : `${pesoNum} kg` // assume mg quando não informado (cereais geralmente kg)
+                  : `Peso ${idx + 1}`;
+
               const price =
-                e?.Preco_ens ??
-                e?.Preco ??
-                e?.preco ??
-                e?.price ??
-                null;
+                e?.Preco_ens ?? e?.Preco ?? e?.preco ?? e?.price ?? null;
 
               return {
                 id: String(idFallback),
                 label,
                 peso: pesoNum,
+                pesoUnit,
                 price,
                 raw: e,
               };
@@ -143,7 +175,10 @@ export default function View() {
 
             const byPeso = new Map();
             for (const m of mapped) {
-              const key = m.peso != null ? String(m.peso) : m.label;
+              const key =
+                m.peso != null
+                  ? String(m.peso) + "|" + (m.pesoUnit || "kg")
+                  : m.label;
               if (!byPeso.has(key)) byPeso.set(key, m);
               else {
                 const existing = byPeso.get(key);
@@ -162,8 +197,19 @@ export default function View() {
               return na - nb;
             });
 
-            setWeights(deduped);
-            setSelectedWeight(deduped.length > 0 ? deduped[0] : null);
+            // -> atribui btnId sequencial (1..n)
+            const dedupedWithIds = deduped.map((w, i) => ({
+              ...w,
+              btnId: i + 1,
+            }));
+
+            setWeights(dedupedWithIds);
+            setSelectedWeight(
+              dedupedWithIds.length > 0 ? dedupedWithIds[0] : null
+            );
+            setSelectedBtnId(
+              dedupedWithIds.length > 0 ? dedupedWithIds[0].btnId : null
+            );
           } catch (e) {
             setWeights([]);
             setSelectedWeight(null);
@@ -182,7 +228,9 @@ export default function View() {
             out = normalize(respOut?.data);
           } catch {
             try {
-              const respFallback = await api.get(`/produtos/${categoria}/${id}`);
+              const respFallback = await api.get(
+                `/produtos/${categoria}/${id}`
+              );
               out = normalize(respFallback?.data);
             } catch {
               out = null;
@@ -201,22 +249,21 @@ export default function View() {
             name: out?.Nome_out ?? out?.Nome ?? out?.nome ?? "Produto",
             image: out?.Foto_out ?? out?.Foto ?? out?.foto ?? null,
             description:
-              out?.Descricao_out ??
-              out?.Descricao ??
-              out?.descricao ??
-              null,
+              out?.Descricao_out ?? out?.Descricao ?? out?.descricao ?? null,
             raw: out,
           };
 
           setProduto(displayOut);
 
+          // tenta detectar peso + unidade
           const pesoValCandidate =
-            out?.Peso_out ??
-            out?.Peso ??
-            out?.peso ??
-            out?.peso_out ??
-            null;
-          const pesoNum = extractNumberFrom(pesoValCandidate);
+            out?.Peso_out ?? out?.Peso ?? out?.peso ?? out?.peso_out ?? null;
+          const parsedOut = parsePeso(
+            pesoValCandidate,
+            out?.Nome_out ?? displayOut.name
+          );
+          const pesoNum = parsedOut.value;
+          const pesoUnit = parsedOut.unit;
 
           if (pesoNum !== null && pesoNum !== undefined && pesoNum !== "") {
             const price =
@@ -228,16 +275,31 @@ export default function View() {
               out?.price ??
               null;
 
+            // determina a unidade padrão: se for medicamento (contém "Ivermectina" ou similar), usa "mg"; senão usa "kg"
+            const productName = String(displayOut.name || "").toLowerCase();
+            const isMedication =
+              /ivermectina|medicamento|antibiótico|anti-parasit/i.test(
+                productName
+              );
+            const defaultUnit = isMedication ? "mg" : "kg";
+
+            const label = pesoUnit
+              ? `${pesoNum} ${pesoUnit}`
+              : `${pesoNum} ${defaultUnit}`;
+
             const w = {
               id: `${displayOut.prodId}-peso-${String(pesoNum)}`,
-              label: String(pesoNum),
+              label,
               peso: pesoNum,
+              pesoUnit,
               price,
               raw: out,
+              btnId: 1,
             };
 
             setWeights([w]);
             setSelectedWeight(w);
+            setSelectedBtnId(1);
 
             const cod =
               out?.Codigo_out ??
@@ -245,8 +307,9 @@ export default function View() {
               out?.CodigoOut ??
               out?.Codigo_outo ??
               null;
-            setCodigo(cod ?? null);
+            if (cod) setCodigo(cod ?? null);
           } else {
+            // sem peso direto no campo, tenta mostrar apenas código direto se houver
             setWeights([]);
             setSelectedWeight(null);
             setCodigo(
@@ -310,63 +373,168 @@ export default function View() {
     fetchData();
   }, [categoria, id]);
 
+  /**
+   * Busca todos os códigos uma vez por produto e normaliza o campo de peso dos códigos
+   */
   useEffect(() => {
-    const fetchCodigoParaCereal = async () => {
+    const fetchAllCodigosForProduto = async () => {
       if (!produto) return;
-      if (produto.source !== "produto") return;
-      if (!selectedWeight) {
-        setCodigo(null);
-        return;
-      }
 
       const prodId = produto.prodId;
-      const peso = selectedWeight.peso;
-
-      if (peso === null || peso === undefined) {
-        setCodigo(null);
-        return;
-      }
-
       setCodigoLoading(true);
       setCodigo(null);
 
       try {
+        // se "outros_produtos" já tem código direto, evita chamada
+        if (produto.source === "outros_produtos") {
+          const raw = produto.raw ?? {};
+          const directCod =
+            raw?.Codigo_out ??
+            raw?.Codigo ??
+            raw?.CodigoOut ??
+            raw?.Codigo_outo ??
+            raw?.codigo ??
+            null;
+
+          if (directCod) {
+            const parsed = parsePeso(
+              raw?.Peso_out ?? raw?.Peso ?? raw?.peso ?? raw?.peso_out ?? null,
+              produto.name
+            );
+            setCodigosList([
+              { peso: parsed.value, codigo: directCod, parsedPeso: parsed },
+            ]);
+            setCodigo(directCod);
+            setCodigoLoading(false);
+            return;
+          }
+        }
+
         const resp = await api.get(
-          `/ensacados/codigo?prodId=${encodeURIComponent(
-            prodId
-          )}&peso=${encodeURIComponent(peso)}`
+          `/ensacados/codigo?prodId=${encodeURIComponent(prodId)}`
         );
-        const data = resp?.data ?? [];
-        const cod = data.length > 0 ? data[0].codigo : null;
-        setCodigo(cod ?? null);
-      } catch {
+        const data = Array.isArray(resp?.data) ? resp.data : [];
+
+        // normaliza cada entrada de código para ter parsedPeso
+        const normalized = data.map((d) => {
+          const pesoRaw =
+            d?.peso ??
+            d?.Peso ??
+            d?.Peso_ens ??
+            d?.peso_en ??
+            d?.peso_val ??
+            null;
+          const parsed = parsePeso(pesoRaw, produto.name);
+          return { ...d, parsedPeso: parsed };
+        });
+
+        console.info(
+          "Array de códigos retornado da API (completo):",
+          normalized
+        );
+        setCodigosList(normalized);
+
+        // decide o código inicial a exibir
+        let code = null;
+
+        if (selectedWeight) {
+          // procura por correspondência exata (valor + unidade quando disponíveis)
+          const matchByPeso = normalized.find((d) => {
+            if (!d || !d.parsedPeso) return false;
+            if (d.parsedPeso.value == null || selectedWeight.peso == null)
+              return false;
+            // compara numérico e ignora case de unidade; se uma das unidades for nula, aceita se número bater
+            const sameNum =
+              Number(d.parsedPeso.value) === Number(selectedWeight.peso);
+            const unitA = d.parsedPeso.unit || null;
+            const unitB = selectedWeight.pesoUnit || null;
+            const sameUnit = !unitA || !unitB ? true : unitA === unitB;
+            return sameNum && sameUnit;
+          });
+
+          if (matchByPeso) code = matchByPeso.codigo ?? null;
+          else {
+            const idx = (selectedWeight.btnId ?? selectedBtnId ?? 1) - 1;
+            if (idx >= 0 && idx < normalized.length)
+              code = normalized[idx]?.codigo ?? null;
+            else if (normalized.length > 0)
+              code = normalized[0]?.codigo ?? null;
+          }
+        } else {
+          if (normalized.length > 0) code = normalized[0]?.codigo ?? null;
+        }
+
+        setCodigo(code);
+      } catch (err) {
+        console.error("Erro ao buscar códigos:", err);
+        setCodigosList([]);
         setCodigo(null);
       } finally {
         setCodigoLoading(false);
       }
     };
 
-    fetchCodigoParaCereal();
-  }, [produto, selectedWeight]);
+    fetchAllCodigosForProduto();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [produto]);
+
+  // sempre que selectedWeight mudar, recalcula o codigo usando a lista já carregada (codigosList)
+  useEffect(() => {
+    if (!selectedWeight) {
+      setCodigo(null);
+      return;
+    }
+
+    const data = codigosList || [];
+    let code = null;
+
+    const matchByPeso = data.find((d) => {
+      if (!d || !d.parsedPeso) return false;
+      if (d.parsedPeso.value == null || selectedWeight.peso == null)
+        return false;
+      const sameNum =
+        Number(d.parsedPeso.value) === Number(selectedWeight.peso);
+      const unitA = d.parsedPeso.unit || null;
+      const unitB = selectedWeight.pesoUnit || null;
+      const sameUnit = !unitA || !unitB ? true : unitA === unitB;
+      return sameNum && sameUnit;
+    });
+
+    if (matchByPeso) {
+      code = matchByPeso.codigo ?? null;
+    } else {
+      const idx = (selectedWeight.btnId ?? selectedBtnId ?? 1) - 1;
+      if (idx >= 0 && idx < data.length) {
+        code = data[idx]?.codigo ?? null;
+      } else if (data.length > 0) {
+        code = data[0]?.codigo ?? null;
+      }
+    }
+
+    setCodigo(code);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedWeight, codigosList]);
 
   if (loading) return <p className="p-4">Carregando produto...</p>;
 
   if (!produto)
     return (
       <>
-        <NavBar initialGreen={true} {...(typeof addToCart === "function" ? { addToCart } : {})} />
+        <NavBar
+          initialGreen={true}
+          {...(typeof addToCart === "function" ? { addToCart } : {})}
+        />
         <div className="min-h-screen flex items-center justify-center p-4">
           <div className="bg-white shadow rounded p-6 max-w-lg text-center">
-            <h2 className="text-xl font-semibold mb-2">Produto não encontrado</h2>
+            <h2 className="text-xl font-semibold mb-2">
+              Produto não encontrado
+            </h2>
             <p className="text-sm text-gray-600">Verifique categoria e id.</p>
           </div>
         </div>
       </>
     );
 
-  // --------------------------
-  //  ADICIONAR AO CARRINHO
-  // --------------------------
   const handleAdd = () => {
     const prodId = produto?.prodId ?? id;
     const nomeprod = produto?.name ?? "Produto";
@@ -400,6 +568,8 @@ export default function View() {
             label: selectedWeight.label,
             price: selectedWeight.price,
             peso: selectedWeight.peso,
+            pesoUnit: selectedWeight.pesoUnit,
+            btnId: selectedWeight.btnId,
           }
         : null,
       rawProduto: produto.raw,
@@ -413,8 +583,7 @@ export default function View() {
 
       if (idx >= 0) {
         cart[idx].quantity =
-          (Number(cart[idx].quantity) || 0) +
-          (Number(cartItem.quantity) || 1);
+          (Number(cart[idx].quantity) || 0) + (Number(cartItem.quantity) || 1);
       } else {
         cart.push(cartItem);
       }
@@ -422,13 +591,10 @@ export default function View() {
       localStorage.setItem("cart_v1", JSON.stringify(cart));
       window.dispatchEvent(new Event("cart_v1:updated"));
 
-      // ------- TOAST NO LUGAR DO ALERT -------
       setToast(true);
       setTimeout(() => setToast(false), 2000);
-
     } catch (e) {
       console.error("Erro ao adicionar ao carrinho:", e);
-
       setToast(true);
       setTimeout(() => setToast(false), 2000);
     }
@@ -476,7 +642,6 @@ export default function View() {
                     {weights.map((w, index) => {
                       const active =
                         selectedWeight && selectedWeight.id === w.id;
-
                       const key =
                         w.id ?? `${produto?.prodId ?? id}-peso-${index}`;
 
@@ -484,14 +649,19 @@ export default function View() {
                         <button
                           key={key}
                           type="button"
-                          onClick={() => setSelectedWeight(w)}
-                          className={`w-20 md:w-28 h-10 md:h-12 flex items-center justify-center rounded-md border text-sm select-none ${
+                          onClick={() => {
+                            setSelectedWeight(w);
+                            setSelectedBtnId(w.btnId);
+                          }}
+                          className={`w-18 md:w-15 h-8 md:h-9 flex items-center justify-center rounded-md border text-md select-none ${
                             active
                               ? "bg-green-700 text-white border-green-700"
                               : "bg-gray-100 text-gray-700 border-gray-300 hover:border-green-500"
                           }`}
+                          title={w.label}
+                          data-btnid={w.btnId}
                         >
-                          <div className="font-bold text-sm">{w.label}</div>
+                          <div className="font-semibold">{w.label}</div>
                         </button>
                       );
                     })}
@@ -542,7 +712,6 @@ export default function View() {
         </div>
       </div>
 
-      {/* TOAST AQUI 😍 */}
       <Toast message="Produto adicionado ao carrinho" show={toast} />
     </>
   );
