@@ -2,17 +2,24 @@ import { useState, useEffect } from "react";
 import api from "../api";
 import { Link, useNavigate } from "react-router-dom";
 import NavBar from "../components/navbar/NavBar";
-import { jwtDecode } from "jwt-decode"; // Importe jwt-decode
+import { jwtDecode } from "jwt-decode";
+import Toast from "../components/messages/Toast";
 
 export default function Login() {
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); // Novo
+  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+  const navigate = useNavigate();
 
   useEffect(() => {
     setFormData({ email: "", senha: "" });
     setLoading(false);
   }, []);
+
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: "", type }), 2500);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,19 +30,20 @@ export default function Login() {
     e.preventDefault();
     try {
       const response = await api.post("/login", formData);
-      const decoded = jwtDecode(response.data.token); // Use jwtDecode em vez de jwt.verify
-      
-      // Salvar informações do usuário no localStorage
-      localStorage.setItem('userId', decoded.id);
-      localStorage.setItem('userName', decoded.nome);
-      localStorage.setItem('userType', decoded.tipo);
-      localStorage.setItem('token', response.data.token);
+      const decoded = jwtDecode(response.data.token);
 
-       window.dispatchEvent(new Event("authChanged"));
-      
-      navigate("/");
+      localStorage.setItem("userId", decoded.id);
+      localStorage.setItem("userName", decoded.nome);
+      localStorage.setItem("userType", decoded.tipo);
+      localStorage.setItem("token", response.data.token);
+
+      window.dispatchEvent(new Event("authChanged"));
+
+      showToast("Login realizado com sucesso!", "success");
+
+      setTimeout(() => navigate("/"), 1200);
     } catch (error) {
-      alert(`Erro ao fazer login: ${error}. Verifique seus dados`);
+      showToast("Erro ao fazer login: verifique seus dados.", "error");
     }
   };
 
@@ -66,13 +74,7 @@ export default function Login() {
                     : field.charAt(0).toUpperCase() + field.slice(1)}
                 </label>
                 <input
-                  type={
-                    field == "senha"
-                      ? "password"
-                      : field == "email"
-                      ? "email"
-                      : "text"
-                  }
+                  type={field == "senha" ? "password" : field == "email" ? "email" : "text"}
                   name={field}
                   value={formData[field]}
                   onChange={handleChange}
@@ -96,6 +98,8 @@ export default function Login() {
           </p>
         </div>
       </div>
+
+      <Toast message={toast.message} show={toast.show} type={toast.type} />
     </>
   );
 }
