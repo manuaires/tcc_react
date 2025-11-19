@@ -127,8 +127,8 @@ export default function SidebarCart() {
             background: "#fff",
             boxShadow: "-12px 0 24px rgba(0,0,0,0.12)",
             zIndex: 1300,
-            padding: 16,
-            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
             transform: isOpen ? "translateX(0)" : "translateX(100%)",
             opacity: isOpen ? 1 : 0,
             transition: `transform ${ANIM_DURATION}ms ease, opacity ${ANIM_DURATION}ms ease`,
@@ -143,7 +143,7 @@ export default function SidebarCart() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              paddingBottom: 8,
+              padding: "16px 16px 8px 16px",
             }}
           >
             <h3 style={{ margin: 0 }}>Seu carrinho</h3>
@@ -164,8 +164,15 @@ export default function SidebarCart() {
             </button>
           </div>
 
-          {/* LISTA */}
-          <div style={{ marginTop: 12, paddingBottom: 90 }}>
+          {/* LISTA - scrollável */}
+          <div
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              padding: "12px 16px",
+              minHeight: 0,
+            }}
+          >
             {cart.length === 0 && (
               <p className="text-gray-500 text-sm">Seu carrinho está vazio.</p>
             )}
@@ -180,20 +187,17 @@ export default function SidebarCart() {
             ))}
           </div>
 
-          {/* RODAPÉ FIXO */}
+          {/* RODAPÉ FIXO - acompanha o aside */}
           {cart.length > 0 && (
             <div
               style={{
-                position: "fixed",
-                bottom: 0,
-                right: 0,
-                width: 360,
                 background: "#fff",
-                padding: "12px 16px",
+                padding: "12px 16px 16px 16px",
                 boxShadow: "0 -6px 14px rgba(0,0,0,0.09)",
                 display: "flex",
                 flexDirection: "column",
                 gap: 10,
+                flexShrink: 0,
               }}
             >
               {/* ENVIAR PEDIDO */}
