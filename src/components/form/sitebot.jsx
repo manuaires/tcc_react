@@ -71,7 +71,12 @@ export default function OrderForm({ phone = "5515991782865" }) {
 
     if (weight !== null && weight !== "") {
       const unit = weightUnit ? String(weightUnit).trim() : "kg";
-      return `${baseName} ${weight}${unit}`.trim();
+      const weightStr = `${weight}${unit}`;
+      // Verifica se já existe algum padrão de peso no baseName (número + unidade como kg, mg, g, etc)
+      const hasWeightPattern = /\d+\s*(kg|g|mg|ml|l|un|unid)/i.test(baseName);
+      if (!hasWeightPattern) {
+        return `${baseName} ${weightStr}`.trim();
+      }
     }
 
     return (baseName || "").trim();
@@ -309,7 +314,7 @@ export default function OrderForm({ phone = "5515991782865" }) {
     const contatoLimpo =
       contatoParaMostrar ?? String(contato || "").replace(/\D/g, "");
     const header = [
-      "Novo Orçamento, usuário",
+      "Novo Orçamento",
       `De: ${contatoLimpo || phone}`,
       `Nome: ${nome || "[não informado]"}`,
     ];

@@ -33,7 +33,7 @@ export default function RacaoSection() {
 
   return (
     <section className="py-15 flex flex-col justify-center items-center w-full gap-8">
-     <div className="flex justify-center w-full px-4">
+      <div className="flex justify-center w-full px-4">
         <div className="relative w-full max-w-[500px]">
           <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
             <FaSearch className="text-green-700 w-5 h-5" />
