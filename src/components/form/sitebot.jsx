@@ -314,7 +314,7 @@ export default function OrderForm({ phone = "5515991782865" }) {
     const contatoLimpo =
       contatoParaMostrar ?? String(contato || "").replace(/\D/g, "");
     const header = [
-      "Novo Orçamento",
+      "Novo Orçamento, usuário",
       `De: ${contatoLimpo || phone}`,
       `Nome: ${nome || "[não informado]"}`,
     ];

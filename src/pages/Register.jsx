@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import NavBar from "../components/navbar/NavBar";
 import api from "../api";
@@ -19,6 +19,16 @@ export default function Register() {
   const [pwdFocused, setPwdFocused] = useState(false);
   const navigate = useNavigate();
 
+  // novos estados para verificação de e-mail
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [sendingCode, setSendingCode] = useState(false);
+  const [verifyingCode, setVerifyingCode] = useState(false);
+  const [verifyError, setVerifyError] = useState("");
+  const [resendTimer, setResendTimer] = useState(0);
+  const resendIntervalRef = useRef(null);
+
   // REGEX DE SENHA FORTE (usado no handleSubmit também)
   const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
 
@@ -34,6 +44,13 @@ export default function Register() {
       numero: "",
       complemento: "",
     });
+
+    // cleanup on unmount
+    return () => {
+      if (resendIntervalRef.current) {
+        clearInterval(resendIntervalRef.current);
+      }
+    };
   }, []);
 
   const handleChange = (e) => {
@@ -77,6 +94,13 @@ export default function Register() {
     e.preventDefault();
     setError("");
 
+    if (!emailVerified) {
+      setError(
+        "Confirme seu e-mail antes de concluir o cadastro (envie/verifique o código)."
+      );
+      return;
+    }
+
     // VALIDAR SENHA FORTE (reconfirmação)
     if (!strongPasswordRegex.test(formData.senha)) {
       setError(
@@ -107,6 +131,84 @@ export default function Register() {
     } catch (err) {
       console.error("Erro no cadastro:", err);
       setError("Erro no cadastro. Verifique os dados e tente novamente.");
+    }
+  };
+
+  const sendVerificationCode = async () => {
+    setError("");
+    setVerifyError("");
+    if (!formData.email) {
+      setError("Informe um email válido antes de enviar o código.");
+      return;
+    }
+
+    try {
+      setSendingCode(true);
+      // opcional: checar se já existe (rota /email/check)
+      const check = await api.post("/email/check", { email: formData.email });
+      if (check.data.exists) {
+        setError("Já existe uma conta com esse email.");
+        setSendingCode(false);
+        return;
+      }
+
+      await api.post("/email/send-code", { email: formData.email });
+      setVerificationSent(true);
+      setResendTimer(60); // 60s antes de permitir reenviar
+
+      // start timer and keep ref so we can clear on unmount
+      if (resendIntervalRef.current) {
+        clearInterval(resendIntervalRef.current);
+      }
+      resendIntervalRef.current = setInterval(() => {
+        setResendTimer((t) => {
+          if (t <= 1) {
+            if (resendIntervalRef.current) {
+              clearInterval(resendIntervalRef.current);
+              resendIntervalRef.current = null;
+            }
+            return 0;
+          }
+          return t - 1;
+        });
+      }, 1000);
+    } catch (err) {
+      console.error(err);
+      setError(
+        err?.response?.data?.error ||
+          "Erro ao enviar código. Verifique o e-mail e tente novamente."
+      );
+    } finally {
+      setSendingCode(false);
+    }
+  };
+
+  const verifyCode = async () => {
+    setVerifyError("");
+    if (!verificationCode || verificationCode.length < 4) {
+      setVerifyError("Informe o código recebido por e-mail.");
+      return;
+    }
+    try {
+      setVerifyingCode(true);
+      const resp = await api.post("/email/verify-code", {
+        email: formData.email,
+        code: verificationCode,
+      });
+      if (resp.data.verified) {
+        setEmailVerified(true);
+        setVerifyError("");
+      } else {
+        setVerifyError("Código inválido.");
+      }
+    } catch (err) {
+      console.error(err);
+      setVerifyError(
+        err?.response?.data?.error ||
+          "Erro ao verificar o código. Tente novamente."
+      );
+    } finally {
+      setVerifyingCode(false);
     }
   };
 
@@ -148,14 +250,67 @@ export default function Register() {
 
             <div>
               <label className="block text-gray-700 mb-1">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-400 outline-none"
-              />
+
+              {/* email + botão de envio de código */}
+              <div className="flex gap-2 items-center">
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={(e) => {
+                    // ao trocar e-mail, invalidar verificação anterior
+                    setFormData((prev) => ({ ...prev, email: e.target.value }));
+                    setEmailVerified(false);
+                    setVerificationSent(false);
+                    setVerificationCode("");
+                    setVerifyError("");
+                  }}
+                  required
+                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-400 outline-none"
+                />
+                <button
+                  type="button"
+                  className="px-3 py-2 bg-green-600 text-white rounded-lg disabled:opacity-50"
+                  onClick={sendVerificationCode}
+                  disabled={sendingCode || resendTimer > 0}
+                >
+                  {sendingCode
+                    ? "Enviando..."
+                    : resendTimer > 0
+                    ? `Reenviar (${resendTimer}s)`
+                    : "Enviar código"}
+                </button>
+              </div>
+
+              {/* campo para digitar código / verificar */}
+              {verificationSent && !emailVerified && (
+                <div className="mt-3 flex gap-2 items-center">
+                  <input
+                    type="text"
+                    placeholder="Código (6 dígitos)"
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value)}
+                    className="w-1/2 border p-2 rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={verifyCode}
+                    className="px-3 py-2 bg-blue-600 text-white rounded-lg"
+                    disabled={verifyingCode}
+                  >
+                    {verifyingCode ? "Verificando..." : "Verificar"}
+                  </button>
+                  {verifyError && (
+                    <p className="text-red-600 ml-2">{verifyError}</p>
+                  )}
+                </div>
+              )}
+
+              {emailVerified && (
+                <p className="text-green-600 text-sm mt-2">
+                  ✔ E-mail verificado
+                </p>
+              )}
             </div>
 
             <div>
@@ -314,7 +469,8 @@ export default function Register() {
 
             <button
               type="submit"
-              className="w-full bg-green-700 text-white py-2 rounded-lg font-semibold hover:bg-green-800 transition"
+              className="w-full bg-green-700 text-white py-2 rounded-lg font-semibold hover:bg-green-800 transition disabled:opacity-60"
+              disabled={!emailVerified}
             >
               Cadastrar
             </button>
