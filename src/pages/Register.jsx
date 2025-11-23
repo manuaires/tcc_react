@@ -318,7 +318,7 @@ export default function Register() {
 
               <div className="relative">
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type="text"
                   name="senha"
                   value={formData.senha}
                   onChange={handlePasswordChange}
@@ -329,12 +329,16 @@ export default function Register() {
                   pattern="^(?=.*[a-z])(?=.*[A-Z]).{8,}$"
                   title="A senha deve ter no mínimo 8 caracteres, incluindo pelo menos 1 letra maiúscula e 1 letra minúscula."
                   placeholder="Crie uma senha forte..."
-                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-400 outline-none"
+                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-400 outline-none pr-10"
+                  style={
+                    !showPassword ? { WebkitTextSecurity: "disc" } : undefined
+                  }
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800"
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                 >
                   {showPassword ? <IoEyeOff size={20} /> : <IoEye size={20} />}
                 </button>

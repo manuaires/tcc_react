@@ -10,7 +10,11 @@ export default function Login() {
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -77,20 +81,40 @@ export default function Login() {
                 </label>
                 <div className="relative">
                   <input
-                    type={field === "senha" && !showPassword ? "password" : field === "senha" ? "text" : field === "email" ? "email" : "text"}
+                    type={
+                      field === "senha"
+                        ? "text"
+                        : field === "email"
+                        ? "email"
+                        : "text"
+                    }
                     name={field}
                     value={formData[field]}
                     onChange={handleChange}
                     required
-                    className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-400 outline-none"
+                    className={`w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-400 outline-none ${
+                      field === "senha" ? "pr-10" : ""
+                    }`}
+                    style={
+                      field === "senha" && !showPassword
+                        ? { WebkitTextSecurity: "disc" }
+                        : undefined
+                    }
                   />
                   {field === "senha" && (
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800"
+                      aria-label={
+                        showPassword ? "Ocultar senha" : "Mostrar senha"
+                      }
                     >
-                      {showPassword ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                      {showPassword ? (
+                        <IoEyeOff size={20} />
+                      ) : (
+                        <IoEye size={20} />
+                      )}
                     </button>
                   )}
                 </div>
@@ -98,7 +122,7 @@ export default function Login() {
             ))}
             <button
               type="submit"
-              className="w-full bg-green-700 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition"
+              className="w-full bg-green-700 text-white py-2 rounded-lg font-semibold hover:bg-green-800 transition"
             >
               Entrar
             </button>

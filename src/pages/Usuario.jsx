@@ -196,7 +196,9 @@ export default function Usuario() {
 
       if (formData.senha && !strongPasswordRegex.test(formData.senha)) {
         setToastType("error");
-        setToastMessage("A senha deve ter 8+ caracteres, 1 maiúscula e 1 minúscula.");
+        setToastMessage(
+          "A senha deve ter 8+ caracteres, 1 maiúscula e 1 minúscula."
+        );
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
         return;
@@ -282,7 +284,9 @@ export default function Usuario() {
                 <div className="space-y-4">
                   {userFields.map((f) => (
                     <div key={f.name}>
-                      <label className="block text-gray-700 mb-1">{f.label}</label>
+                      <label className="block text-gray-700 mb-1">
+                        {f.label}
+                      </label>
 
                       <input
                         name={f.name}
@@ -330,21 +334,33 @@ export default function Usuario() {
 
                     <div className="relative">
                       <input
-                        type={showPassword ? "text" : "password"}
+                        type="text"
                         name="senha"
                         value={formData.senha ?? ""}
                         onChange={handlePasswordChange}
                         onFocus={() => setPwdFocused(true)}
                         onBlur={() => setPwdFocused(false)}
                         placeholder="Deixe em branco para manter"
-                        className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-400 outline-none"
+                        className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-400 outline-none pr-10"
+                        style={
+                          !showPassword
+                            ? { WebkitTextSecurity: "disc" }
+                            : undefined
+                        }
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800"
+                        aria-label={
+                          showPassword ? "Ocultar senha" : "Mostrar senha"
+                        }
                       >
-                        {showPassword ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                        {showPassword ? (
+                          <IoEyeOff size={20} />
+                        ) : (
+                          <IoEye size={20} />
+                        )}
                       </button>
                     </div>
 
@@ -355,21 +371,39 @@ export default function Usuario() {
                         </p>
                         <ul className="space-y-2">
                           <li className="flex items-center gap-2">
-                            <span className={pwdChecks.upper ? "text-green-600" : "text-red-600"}>
+                            <span
+                              className={
+                                pwdChecks.upper
+                                  ? "text-green-600"
+                                  : "text-red-600"
+                              }
+                            >
                               {pwdChecks.upper ? "✅" : "❌"}
                             </span>
                             1 letra maiúscula
                           </li>
 
                           <li className="flex items-center gap-2">
-                            <span className={pwdChecks.lower ? "text-green-600" : "text-red-600"}>
+                            <span
+                              className={
+                                pwdChecks.lower
+                                  ? "text-green-600"
+                                  : "text-red-600"
+                              }
+                            >
                               {pwdChecks.lower ? "✅" : "❌"}
                             </span>
                             1 letra minúscula
                           </li>
 
                           <li className="flex items-center gap-2">
-                            <span className={pwdChecks.minLen ? "text-green-600" : "text-red-600"}>
+                            <span
+                              className={
+                                pwdChecks.minLen
+                                  ? "text-green-600"
+                                  : "text-red-600"
+                              }
+                            >
                               {pwdChecks.minLen ? "✅" : "❌"}
                             </span>
                             Mínimo 8 caracteres
@@ -414,7 +448,9 @@ export default function Usuario() {
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 mb-1">Complemento</label>
+                    <label className="block text-gray-700 mb-1">
+                      Complemento
+                    </label>
                     <input
                       name="endereco.complemento"
                       value={formData.endereco?.complemento ?? ""}
