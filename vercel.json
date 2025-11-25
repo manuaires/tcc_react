@@ -1,0 +1,15 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/racoes", "destination": "/index.html" },
+    { "source": "/variedades", "destination": "/index.html" },
+    { "source": "/cereais", "destination": "/index.html" },
+    { "source": "/view/:categoria/:id", "destination": "/index.html" },
+    { "source": "/admin", "destination": "/index.html" },
+    { "source": "/register", "destination": "/index.html" },
+    { "source": "/login", "destination": "/index.html" },
+    { "source": "/usuario", "destination": "/index.html" },
+    { "source": "/orcamento", "destination": "/index.html" },
+    { "source": "/pedido", "destination": "/index.html" }
+  ]
+}
